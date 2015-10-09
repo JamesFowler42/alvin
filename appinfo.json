@@ -1,0 +1,46 @@
+{
+    "appKeys": {
+        "menuName1": 1,
+        "menuName10": 10,
+        "menuName2": 2,
+        "menuName3": 3,
+        "menuName4": 4,
+        "menuName5": 5,
+        "menuName6": 6,
+        "menuName7": 7,
+        "menuName8": 8,
+        "menuName9": 9
+    },
+    "capabilities": [
+        "configurable"
+    ],
+    "companyName": "James Fowler",
+    "longName": "Alvin",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/menu_yes.png",
+                "name": "IMAGE_MENU_YES",
+                "type": "png"
+            },
+            {
+                "file": "images/menu_no.png",
+                "name": "IMAGE_MENU_NO",
+                "type": "png"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "Alvin",
+    "targetPlatforms": [
+        "aplite",
+        "basalt",
+        "chalk"
+    ],
+    "uuid": "3b664cf6-766d-4ea9-95bd-f29fc1ab8a51",
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": false
+    }
+}

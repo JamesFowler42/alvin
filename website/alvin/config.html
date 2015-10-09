@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Morpheuz Sleep Monitor</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 
+/* 
+ * Morpheuz Sleep Monitor
+ *
+ * Copyright (c) 2013-2015 James Fowler
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+-->
+<script type="text/javascript" src="jqplot/jquery.min.js"></script>
+<script type="text/javascript" src="jqplot/jquery.jqplot.min.js"></script>
+<link rel="stylesheet" type="text/css" href="jqplot/jquery.jqplot.css" />
+<script type="text/javascript" src="jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
+<script type="text/javascript" src="jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+<script type="text/javascript" src="jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+<script type="text/javascript" src="jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js"></script>
+<script type="text/javascript" src="jqplot/plugins/jqplot.canvasOverlay.min.js"></script>
+<script type="text/javascript" src="jqplot/plugins/jqplot.pieRenderer.min.js"></script>
+
+<script type="text/javascript" src="utils.js?v=1"></script>
+<link rel="stylesheet" type="text/css" href="view.css?v=1" />
+<script type="text/javascript" src="view.js?v=1"></script>
+
+</head>
+<body>
+  <div class="outer">
+    <div class="inner vpwidth">
+      <form action="">
+        <div id="version" class="vpwidth">v0.5</div>
+        <h2 id="title">
+          <img src="img/morpheuz24.png" />Morpheuz Sleep Monitor
+        </h2>
+        <p class="error verswarning" style="display: none;">
+          You are on an old version of Morpheuz. To get all the new features please upgrade. See <a href="http://www.morpheuz.net/p/upgrade.html">here</a> for details.
+        </p>
+        <p class="error versbeta" style="display: none;">This is a beta version of Morpheuz. Please report any issues you find.</p>
+        <p class="error versproblem" style="display: none;">Unable to determine current version of Morpheuz.</p>
+        <h3 id="sleep-time"></h3>
+        <div id="info-message" style="display: none">
+          <p class="settingswrap">
+            Morpheuz is free. Please show your appreciation by loving the app in the Pebble app store<a class="ios" href="pebble://appstore/52b20a9b05c04688bf000058"> here</a> or a tiny donation.
+          </p>
+        </div>
+        <h3 class="movement-head">Sleep Movement</h3>
+        <div id="chart1" style="width: 318px; height: 250px;" class="vpwidth vpheight"></div>
+        <h3 class="quality-head">Quality of Sleep</h3>
+        <div id="chart2" style="width: 318px; height: 250px;" class="vpwidth vpheight"></div>
+        <h3>Statistics</h3>
+        <table class="statstable">
+          <col width="50%">
+          <col width="50%">
+          <tr class="stat">
+            <td>Total</td>
+            <td id="ttotal">-</td>
+          </tr>
+          <tr class="stat">
+            <td>Restless</td>
+            <td id="tawake">-</td>
+          </tr>
+          <tr class="stat">
+            <td>Light</td>
+            <td id="tlight">-</td>
+          </tr>
+          <tr class="stat">
+            <td>Deep</td>
+            <td id="tdeep">-</td>
+          </tr>
+          <tr class="stat">
+            <td>Ignore</td>
+            <td id="tignore">-</td>
+          </tr>
+        </table>
+        <h4>Sleep Analysis Data Point</h4>
+        <table class="statstable">
+          <col width="50%">
+          <col width="50%">
+          <tr class="stat">
+            <td>Starts</td>
+            <td id="tstarts">-</td>
+          </tr>
+          <tr class="stat">
+            <td>Ends</td>
+            <td id="tends">-</td>
+          </tr>
+        </table>
+        <h3 class="exporthead">Export &amp; Home Automation</h3>
+        <div class="exportwrap">
+          <ol>
+            <li class="grey licollapse liclosed">
+              <p>
+                <img src="img/plus.png" class="liright" /><img src="img/minus.png" class="lidown" />E-Mail - CSV Data &amp; Chart
+              </p>
+              <div class="licollapsible">
+                <label for="emailto">To:</label><input id="emailto" type="email" maxlength="254" class="textbox" /><input type="button" id="mail" value="Export" />
+                <p class="small" id="emailSendResult"></p>
+              </div>
+            </li>
+            <li id="lipushover" class="noset licollapse liclosed">
+              <p>
+                <img src="img/plus.png" class="liright" /><img src="img/minus.png" class="lidown" />Pushover - Daily Chart Export
+              </p>
+              <div class="licollapsible">
+                <div class="row">
+                  <div class="cell">
+                    <label for="ptoken">Token:</label>
+                  </div>
+                  <div class="cell">
+                    <input id="ptoken" type="text" maxlength="30" class="textbox wide" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label for="puser">User:</label>
+                  </div>
+                  <div class="cell">
+                    <input id="puser" type="text" maxlength="30" class="textbox wide" />
+                  </div>
+                </div>
+                <p class="small">Setting these values will enable automatic push messages to Pushover</p>
+                <p class="small">
+                  Last result: <span id="presult"></span>
+                </p>
+              </div>
+            </li>
+            <li class="grey noset ios licollapse liclosed">
+              <p>
+                <img src="img/plus.png" class="liright" /><img src="img/minus.png" class="lidown" />Manual Healthkit export via Smartwatch Pro
+              </p>
+              <div class="licollapsible paddedtop">
+                <a id="swp" href="swpro2hk://">Export</a>
+                <p class="small" id="swpnodata">The recorded data is not yet complete enough for export.</p>
+                <p class="small padded">
+                  Needs iOS8 (or above) with <a id="swplink">Smartwatch Pro</a> installed
+                </p>
+              </div>
+            </li>
+            <li id="liswp" class="noset ios licollapse liclosed">
+              <p>
+                <img src="img/plus.png" class="liright" /><img src="img/minus.png" class="lidown" />Automatic Healthkit export via Smartwatch Pro
+              </p>
+              <div class="licollapsible">
+                <label for="swpdo">Automatic:</label><input id="swpdo" type="checkbox" />
+                <p class="small">One manual export is required before activating automatic mode</p>
+                <p class="small">
+                  Last result: <span id="swpstat"></span>
+                </p>
+              </div>
+            </li>
+            <li id="lilifx" class="noset licollapse liclosed">
+              <p>
+                <img src="img/plus.png" class="liright" /><img src="img/minus.png" class="lidown" />LIFX Smart Bulb
+              </p>
+              <div class="licollapsible">
+                <div class="row">
+                  <div class="cell">
+                    <label for="lifxToken">Token:</label>
+                  </div>
+                  <div class="cell">
+                    <input id="lifxToken" type="text" maxlength="100" class="textbox wide" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label for="lifxTime">Fade-in Time:</label>
+                  </div>
+                  <div class="cell">
+                    <input id="lifxTime" type="number" maxlength="4" class="textbox wide" />
+                  </div>
+                </div>
+                <p class="small">
+                  Get your LIFX token by logging into your profile at <a href="http://cloud.lifx.com">cloud.lifx.com</a> and selecting the "Generate New Token" button. If the values are correct, your LIFX lightbulbs will fade on as soon as your alarm goes off.
+                </p>
+              </div>
+            </li>
+            <li id="lihue" class="noset licollapse liclosed">
+              <p>
+                <img src="img/plus.png" class="liright" /><img src="img/minus.png" class="lidown" />Philips Hue Smart Bulb
+              </p>
+              <div class="licollapsible">
+                <div class="row">
+                  <div class="cell">
+                    <label for="hueip">Bridge IP:</label>
+                  </div>
+                  <div class="cell">
+                    <input id="hueip" type="text" maxlength="15" class="textbox wide" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label for="hueuser">Username:</label>
+                  </div>
+                  <div class="cell">
+                    <input id="hueuser" type="text" maxlength="50" class="textbox wide" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="cell">
+                    <label for="hueid">Bulb Id:</label>
+                  </div>
+                  <div class="cell">
+                    <input id="hueid" type="number" maxlength="5" class="textbox wide" />
+                  </div>
+                </div>
+                <p class="small">If the values are correct, your Hue lightbulbs will fade on as soon as your alarm goes off.</p>
+                <p class="small">Should the light be already on, Morpheuz will not change it.</p>
+              </div>
+            </li>
+            <li id="liif" class="noset licollapse liclosed">
+              <p>
+                <img src="img/plus.png" class="liright" /><img src="img/minus.png" class="lidown" />IFTTT - Maker - Daily Chart Export &amp; Alarm
+              </p>
+              <div class="licollapsible">
+                <div class="row">
+                  <div class="cell">
+                    <label for="ifkey">Key:</label>
+                  </div>
+                  <div class="cell">
+                    <input id="ifkey" type="text" maxlength="50" class="textbox wide" />
+                  </div>
+                </div>
+                <p class="small">Setting this value will send a 'morpheuz_bedtime', 'morpheuz_alarm' &amp; a 'morpheuz_data' event to IFTTT at bed time, alarm time &amp; the normal export time respectively.</p>
+                <p class="small">
+                  Last result: <span id="ifstat"></span>
+                </p>
+              </div>
+            </li>
+          </ol>
+          <input class="noset save" type="button" id="save" value="Save" /><input id="testsettings" type="checkbox" class="noset" /><label for="testsettings" class="noset small">Test Pushover, IFTTT &amp; light settings on save</label>
+          <p class="small noset indent">
+            Last auto export done: <span id="exptime"></span>
+          </p>
+        </div>
+      </form>
+      <h3>See also</h3>
+      <ul>
+        <li><a href="http://www.morpheuz.net/p/instructions.html" target="_blank">Instructions @ www.morpheuz.net</a></li>
+        <li><a class="ios" href="fb://profile/600709213346669">morpheuzsleepmonitor on Facebook</a> <span class="android">morpheuzsleepmonitor on Facebook</span></li>
+        <li><a class="ios" href="twitter:///user?screen_name=morpheuzsleep">@MorpheuzSleep on Twitter</a> <span class="android">@MorpheuzSleep on Twitter</span></li>
+        <li><p>Morpheuz is free and will remain so, but requires hosting space, domain names and I require an occasional motivational coffee. Please consider a tiny donation. (warning: slow button)</p>
+          <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+            <input type="hidden" name="cmd" value="_s-xclick" /> <input type="hidden" name="hosted_button_id" value="ECS3FWQLRZ5SW" /> <input type="image" src="https://www.paypalobjects.com/en_GB/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online." /> <img alt="" border="0" src="https://www.paypalobjects.com/en_GB/i/scr/pixel.gif" width="1" height="1" />
+          </form></li>
+      </ul>
+      <form action="">
+        <h3 class="exporthead noset">Special Features</h3>
+        <div class="exportwrap noset usageindent">
+          <ol>
+            <li id="liusage" class="licollapse liclosed">
+              <p>
+                <img src="img/plus.png" class="liright" /><img src="img/minus.png" class="lidown" />Help to improve Morpheuz by allowing once a day anonymous usage statistics.
+              </p>
+              <div class="licollapsible">
+                <label for="usage">Allow:</label><input id="usage" type="checkbox" />
+                <p class="small">No personal data is sent or saved.</p>
+              </div>
+            </li>
+            <li id="lilazarus" class="licollapse liclosed">
+              <p>
+                <img src="img/plus.png" class="liright" /><img src="img/minus.png" class="lidown" />Protect against some activity monitoring apps interfering with Morpheuz.
+              </p>
+              <div class="licollapsible">
+                <label for="lazarus">Protect:</label><input id="lazarus" type="checkbox" />
+                <p class="small">UP and Misfit use a background process. To sync their data, they replace Morpheuz as the running app. Enabling this setting will make Morpheuz revive after 5 minutes, allowing these apps to sync their data, and Morpheuz to continue to monitor sleep.</p>
+              </div>
+            </li>
+          </ol>
+          <input type="button" id="save2" class="save" value="Save" />
+        </div>
+      </form>
+      <p class="centre small">&copy; 2013-2015 James Fowler</p>
+    </div>
+  </div>
+</body>
+</html>
