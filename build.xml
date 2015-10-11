@@ -1,62 +1,48 @@
 <?xml version="1.0"?>
-<project name="morpheuz" basedir="." default="all">
+<project name="alvin" basedir="." default="all">
 
-	<property name="ver" value="36"/>
-	<property name="inc" value="1"/>
-	<property name="builddir" value="website/morpheuz/build"/>
-	<property name="srcdir" value="website/morpheuz"/>
-	<property name="test.dir" value="../Desktop/morpheuz"/>
+	<property name="ver" value="10"/>
+	<property name="inc" value="3"/>
+	<property name="builddir" value="website/alvin/build"/>
+	<property name="srcdir" value="website/alvin"/>
+	<property name="test.dir" value="../Desktop/alvin"/>
 	<property name="img" value="/img"/>
 
 	<target name="all"  description="all">
 		<antcall target="shrink" inheritrefs="true" inheritall="true">
-			<param name="in.file" value="view.css" />
-			<param name="min.file" value="view-${ver}.min.css" />
+			<param name="in.file" value="config.css" />
+			<param name="min.file" value="config-${ver}.min.css" />
 		</antcall>
 		<antcall target="shrink" inheritrefs="true" inheritall="true">
-			<param name="in.file" value="view.js" />
-			<param name="min.file" value="view-${ver}.min.js" />
+			<param name="in.file" value="config.js" />
+			<param name="min.file" value="config-${ver}.min.js" />
 		</antcall>
 		<antcall target="shrink" inheritrefs="true" inheritall="true">
 			<param name="in.file" value="utils.js" />
 			<param name="min.file" value="utils-${ver}.min.js" />
 		</antcall>
 		<antcall target="copyedit" inheritrefs="true" inheritall="true">
-			<param name="in.file" value="view.html" />
-			<param name="out.file" value="view-${ver}.html" />
+			<param name="in.file" value="config.html" />
+			<param name="out.file" value="config-${ver}.html" />
 		</antcall>
 		<antcall target="copyversion" inheritrefs="true" inheritall="true">
 			<param name="in.file" value="currentversion.json" />
 			<param name="out.file" value="currentversion.json" />
 		</antcall>
-		<antcall target="copyquote" inheritrefs="true" inheritall="true">
-			<param name="in.file" value="quotes.json" />
-			<param name="out.file" value="quotes.json" />
-		</antcall>
-		<antcall target="copyquote" inheritrefs="true" inheritall="true">
-			<param name="in.file" value="json_email.php" />
-			<param name="out.file" value="json_email.php" />
+		<antcall target="copy" inheritrefs="true" inheritall="true">
+			<param name="min.file" value="config-${ver}.min.css" />
 		</antcall>
 		<antcall target="copy" inheritrefs="true" inheritall="true">
-			<param name="min.file" value="view-${ver}.min.css" />
-		</antcall>
-		<antcall target="copy" inheritrefs="true" inheritall="true">
-			<param name="min.file" value="view-${ver}.min.js" />
+			<param name="min.file" value="config-${ver}.min.js" />
 		</antcall>
 		<antcall target="copy" inheritrefs="true" inheritall="true">
 			<param name="min.file" value="utils-${ver}.min.js" />
 		</antcall>
 		<antcall target="copy" inheritrefs="true" inheritall="true">
-			<param name="min.file" value="view-${ver}.html" />
+			<param name="min.file" value="config-${ver}.html" />
 		</antcall>
 		<antcall target="copy" inheritrefs="true" inheritall="true">
 			<param name="min.file" value="currentversion.json" />
-		</antcall>
-		<antcall target="copy" inheritrefs="true" inheritall="true">
-			<param name="min.file" value="quotes.json" />
-		</antcall>
-		<antcall target="copy" inheritrefs="true" inheritall="true">
-			<param name="min.file" value="json_email.php" />
 		</antcall>
 		<antcall target="copyimages" inheritrefs="true" inheritall="true" />
 	</target>
@@ -83,8 +69,8 @@
 		<echo message="Copying ${srcdir}/${in.file} to ${builddir}/${out.file}"/>
 		<copy file="${srcdir}/${in.file}" tofile="${builddir}/${out.file}" overwrite="true" force="true" />
 		<echo message="Editing ${builddir}/${out.file}"/>
-		<replace file="${builddir}/${out.file}" token="view.js?v=1" value="view-${ver}.min.js?v=${inc}"/>
-		<replace file="${builddir}/${out.file}" token="view.css?v=1" value="view-${ver}.min.css?v=${inc}"/>
+		<replace file="${builddir}/${out.file}" token="config.js?v=1" value="config-${ver}.min.js?v=${inc}"/>
+		<replace file="${builddir}/${out.file}" token="config.css?v=1" value="config-${ver}.min.css?v=${inc}"/>
 		<replace file="${builddir}/${out.file}" token="utils.js?v=1" value="utils-${ver}.min.js?v=${inc}"/>
 	</target>
 	
@@ -94,12 +80,7 @@
 		<echo message="Editing ${builddir}/${out.file}"/>
 		<replace file="${builddir}/${out.file}" token="@@@" value="${ver}"/>
 	</target>
-	
-	<target name="copyquote" description="copyquote">
-		<echo message="Copying ${srcdir}/${in.file} to ${builddir}/${out.file}"/>
-		<copy file="${srcdir}/${in.file}" tofile="${builddir}/${out.file}" overwrite="true" force="true" outputencoding="US-ASCII"/>
-	</target>
-	
+
 	<target name="copyimages" description="copyimages">
 		<echo message="Copying images from ${srcdir}${img} to ${test.dir}${img}"/>
 		<copy todir="${test.dir}${img}" overwrite="true" force="true">

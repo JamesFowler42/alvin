@@ -1,7 +1,7 @@
 /* 
- * Morpheuz Sleep Monitor
+ * Alvin IFTTT Control Application
  *
- * Copyright (c) 2013-2015 James Fowler
+ * Copyright (c) 2015 James Fowler
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 function mUtil() {
   return {
     emailUrl : "json_email.php",
-    emailToken : "morpheuz20",
+    emailToken : "alvin20",
     okResponse : "Sent OK",
     failResponse : "Failed to send with ",
     failGeneral : "Failed to send"

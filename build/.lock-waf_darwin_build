@@ -1,0 +1,8 @@
+argv = ['/Users/keith/pebble-dev/PebbleSDK-2.8/Pebble/waf', 'configure', 'build']
+environ = {'SSH_AUTH_SOCK': '/private/tmp/com.apple.launchd.oxM6Wr6WyE/Listeners', 'VERSIONER_PYTHON_PREFER_32_BIT': 'no', 'Apple_PubSub_Socket_Render': '/private/tmp/com.apple.launchd.rsdC8A0WcZ/Render', 'LOGNAME': 'keith', 'USER': 'keith', 'XPC_SERVICE_NAME': '0', 'PATH': '/usr/bin:/bin:/usr/sbin:/sbin:/Users/keith/pebble-dev/PebbleSDK-2.8/arm-cs-tools/bin', 'HOME': '/Users/keith', 'DISPLAY': '/private/tmp/com.apple.launchd.g03co9qaPC/org.macosforge.xquartz:0', 'TMPDIR': '/var/folders/gc/k5ggvx353c33280cq9nmppn00000gr/T/', 'SHELL': '/bin/bash', 'VERSIONER_PYTHON_VERSION': '2.7', 'XPC_FLAGS': '0x0', '__CF_USER_TEXT_ENCODING': '0x1F8:0x0:0x0', 'APP_ICON_2511': '../Resources/Eclipse.icns', 'JAVA_STARTED_ON_FIRST_THREAD_2511': '1'}
+files = ['/Users/keith/alvin/wscript']
+hash = 7073463171006590119
+options = {'files': '', 'jobs': 2, 'verbose': 0, 'nocache': False, 'progress_bar': 0, 'timestamp': None, 'distcheck_args': None, 'top': '', 'destdir': '', 'keep': 0, 'zones': '', 'debug': False, 'prefix': '/usr/local/', 'download': False, 'force': False, 'targets': '', 'out': ''}
+out_dir = '/Users/keith/alvin/build'
+run_dir = '/Users/keith/alvin'
+top_dir = '/Users/keith/alvin'

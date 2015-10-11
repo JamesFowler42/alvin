@@ -1,7 +1,7 @@
 /* 
- * Morpheuz Sleep Monitor
+ * Alvin IFTTT Control Application
  *
- * Copyright (c) 2013-2015 James Fowler
+ * Copyright (c) 2015 James Fowler
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ function mConst() {
     awakeAbove : 1000,
     lightAbove : 120,
     sampleIntervalMins : 10,
-    swpAppStoreUrl : "https://itunes.apple.com/app/smartwatch-pro-for-pebble/id673907094?mt=8&at=10lIFm&pt=409665&ct=morpheuz_web",
+    swpAppStoreUrl : "https://itunes.apple.com/app/smartwatch-pro-for-pebble/id673907094?mt=8&at=10lIFm&pt=409665&ct=alvin_web",
     displayDateFmt : "WWW, NNN dd, yyyy hh:mm",
     iosDateFormat : "dd N yyyy hh:mm",
     swpUrlDate : "yyyy-MM-ddThh:mm:00",
@@ -42,7 +42,7 @@ function mConst() {
     emailFooter2 : "<br/><br/><small>Please don't reply, this is an unmonitored mailbox</small><br/>",
     emailAddressMandatory : "valid email address is required",
     sendingEmail : "Sending...",
-    url : "http://ui.morpheuz.net/keith.j.fowler/morpheuz/view-",
+    url : "http://ui.alvin.net/keith.j.fowler/alvin/view-",
     report : "Report"
   };
 }
@@ -505,7 +505,7 @@ $("document").ready(function() {
     $("#swpnodata").hide();
     $("#tstarts").text(out.tbegin.format(mConst().iosDateFormat));
     $("#tends").text(out.tends.format(mConst().iosDateFormat));
-    var swpUrl = "swpro2hk://?source=Morpheuz&starts=" + out.tbegin.format(mConst().swpUrlDate) + "&ends=" + out.tends.format(mConst().swpUrlDate);
+    var swpUrl = "swpro2hk://?source=Alvin&starts=" + out.tbegin.format(mConst().swpUrlDate) + "&ends=" + out.tends.format(mConst().swpUrlDate);
     if (token != null && token !== "") {
       swpUrl += "&at=" + token;
     }
@@ -668,9 +668,9 @@ $("document").ready(function() {
 
     // Build email json
     var email = {
-      "from" : "Morpheuz <noreply@morpheuz.co.uk>",
+      "from" : "Alvin <noreply@alvin.co.uk>",
       "to" : emailto,
-      "subject" : "Morpheuz-" + new Date(base).format("yyyy-MM-dd"),
+      "subject" : "Alvin-" + new Date(base).format("yyyy-MM-dd"),
       "message" : mConst().emailHeader2 + url + mConst().emailHeader + cpy.body + mConst().emailFooter1 + mConst().emailFooter2
     };
 

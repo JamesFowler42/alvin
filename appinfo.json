@@ -1,5 +1,6 @@
 {
     "appKeys": {
+        "ctrl": 13,
         "menuName1": 1,
         "menuName10": 10,
         "menuName2": 2,
@@ -9,7 +10,9 @@
         "menuName6": 6,
         "menuName7": 7,
         "menuName8": 8,
-        "menuName9": 9
+        "menuName9": 9,
+        "menuToggle": 11,
+        "version": 12
     },
     "capabilities": [
         "configurable"
