@@ -22,289 +22,6 @@
  * THE SOFTWARE.
  */
 
-/*
- * Constants
- */
-function mConst() {
-  return {
-    chartBottom : -50,
-    chartTop : 4000,
-    awakeAbove : 1000,
-    lightAbove : 120,
-    sampleIntervalMins : 10,
-    swpAppStoreUrl : "https://itunes.apple.com/app/smartwatch-pro-for-pebble/id673907094?mt=8&at=10lIFm&pt=409665&ct=alvin_web",
-    displayDateFmt : "WWW, NNN dd, yyyy hh:mm",
-    iosDateFormat : "dd N yyyy hh:mm",
-    swpUrlDate : "yyyy-MM-ddThh:mm:00",
-    emailHeader : "<h2>CSV Sleep data</h2>",
-    emailHeader2 : "<h2>Chart Display</h2>",
-    emailFooter1 : "<br/>Note: -1 is no data captured, -2 is ignore set, ALARM, START and END nodes represent smart alarm actual, start and end",
-    emailFooter2 : "<br/><br/><small>Please don't reply, this is an unmonitored mailbox</small><br/>",
-    emailAddressMandatory : "valid email address is required",
-    sendingEmail : "Sending...",
-    url : "http://ui.alvin.net/keith.j.fowler/alvin/view-",
-    report : "Report"
-  };
-}
-
-/*
- * Build data set for the graph
- */
-function buildGraphDataSet(base, splitup, more) {
-  var startPoint = new Date(base);
-  for (var i = 0; i < splitup.length; i++) {
-    if (splitup[i] === "") {
-      continue;
-    }
-    var element = new Array();
-    element[0] = startPoint;
-    element[1] = parseInt(splitup[i], 10);
-    if (element[1] < 0) {
-      element[1] = null;
-    }
-    more[i] = element;
-    startPoint = startPoint.addMinutes(mConst().sampleIntervalMins);
-  }
-}
-
-/*
- * Populate ignore segments
- */
-function populateIgnore(base, canvasOverlayConf, splitup, totalWidth) {
-
-  var lineW = totalWidth / splitup.length;
-
-  var startPoint = new Date(base);
-  for (var i = 0; i < splitup.length; i++) {
-    if (splitup[i] === "") {
-      continue;
-    }
-
-    if (parseInt(splitup[i], 10) == -2) {
-      var ignoreOverlay = {
-        verticalLine : {
-          name : "ignore",
-          x : startPoint,
-          lineWidth : lineW,
-          yOffset : 0,
-          color : "#184E99",
-          shadow : false
-        }
-      };
-      canvasOverlayConf.show = true;
-      canvasOverlayConf.objects.push(ignoreOverlay);
-    }
-    startPoint = startPoint.addMinutes(mConst().sampleIntervalMins);
-  }
-}
-
-/*
- * Locate match one minute at a time
- */
-function returnAbsoluteMatch(early, late, actualstr) {
-  var point = early;
-  while (point.getTime() < late.getTime()) {
-    var teststr = point.format("hhmm");
-    if (actualstr === teststr) {
-      return point;
-    }
-    point = point.addMinutes(1);
-  }
-  return early;
-}
-
-/*
- * Work out where the start and stop of the wake-up period should go
- */
-function startStopAlarm(smartOn, fromhr, frommin, tohr, tomin, base, canvasOverlayConf, splitup) {
-  if (smartOn) {
-    var fromstr = fixLen(fromhr) + fixLen(frommin);
-    var tostr = fixLen(tohr) + fixLen(tomin);
-    var smartStartPoint = new Date(base);
-    var early = null;
-    var late = null;
-    for (var i = 0; i < splitup.length; i++) {
-      var teststr1 = smartStartPoint.format("hhmm");
-      var smartStartPoint1 = smartStartPoint;
-      smartStartPoint = smartStartPoint.addMinutes(mConst().sampleIntervalMins);
-      var teststr2 = smartStartPoint.format("hhmm");
-      if (early === null && fromstr >= teststr1 && fromstr <= teststr2) {
-        early = returnAbsoluteMatch(smartStartPoint1, smartStartPoint, fromstr);
-      }
-      if (late === null && tostr >= teststr1 && tostr <= teststr2) {
-        late = returnAbsoluteMatch(smartStartPoint1, smartStartPoint, tostr);
-      }
-      if (late !== null && early !== null) {
-        break;
-      }
-    }
-    if (early !== null) {
-      var earlyOverlay = {
-        dashedVerticalLine : {
-          name : "start",
-          x : early,
-          lineWidth : 1,
-          yOffset : 0,
-          dashPattern : [ 1, 4 ],
-          color : "rgb(76, 217, 100)",
-          shadow : false
-        }
-      };
-      canvasOverlayConf.show = true;
-      canvasOverlayConf.objects.push(earlyOverlay);
-    }
-    if (late !== null) {
-      var lateOverlay = {
-        dashedVerticalLine : {
-          name : "end",
-          x : late,
-          lineWidth : 1,
-          yOffset : 0,
-          dashPattern : [ 1, 4 ],
-          color : "rgb(255, 59, 48)",
-          shadow : false
-        }
-      };
-      canvasOverlayConf.show = true;
-      canvasOverlayConf.objects.push(lateOverlay);
-    }
-  }
-}
-
-/*
- * Calculate stats
- */
-function calculateStats(base, splitup, goneoff, canvasOverlayConf) {
-  // Get the full set of data up to the wake up point.
-  // Ignore nulls
-  var pieStartPoint = new Date(base);
-  var firstSleep = true;
-  var tbegin = null;
-  var ibegin = null;
-  var tends = null;
-  var iends = null;
-  var tendsStop = null;
-  var iendsStop = null;
-  for (var i = 0; i < splitup.length; i++) {
-    if (splitup[i] === "") {
-      continue;
-    }
-    var data = parseInt(splitup[i], 10);
-    var teststr1 = pieStartPoint.format("hhmm");
-    var pieStartPoint1 = pieStartPoint;
-    pieStartPoint = pieStartPoint.addMinutes(mConst().sampleIntervalMins);
-    var teststr2 = pieStartPoint.format("hhmm");
-    if (goneoff != "N" && goneoff >= teststr1 && goneoff <= teststr2) {
-      tends = returnAbsoluteMatch(pieStartPoint1, pieStartPoint, goneoff);
-      iends = i;
-      break;
-    } else if (data != -1 && data != -2 && data <= mConst().awakeAbove) {
-      if (firstSleep) {
-        tbegin = pieStartPoint1;
-        ibegin = i;
-        var beginOverlay = {
-          verticalLine : {
-            name : "begin",
-            x : tbegin,
-            lineWidth : 1,
-            yOffset : 0,
-            color : "rgb(255, 149, 0)",
-            shadow : false
-          }
-        };
-        canvasOverlayConf.show = true;
-        canvasOverlayConf.objects.push(beginOverlay);
-        firstSleep = false;
-      }
-      tendsStop = pieStartPoint;
-      iendsStop = i;
-    }
-  }
-
-  // If we haven't got a regular end because of an alarm, then find
-  // the last time they were below waking levels of movement
-  if (tends === null && tendsStop !== null) {
-    tends = tendsStop;
-    iends = iendsStop;
-  }
-
-  // Compute the stats within the bounds of the start and stop times
-  var awake = 0;
-  var deep = 0;
-  var light = 0;
-  var ignore = 0;
-  if (ibegin !== null && iends !== null) {
-    for (var j = ibegin; j <= iends; j++) {
-      if (splitup[j] === "") {
-        continue;
-      }
-      var data2 = parseInt(splitup[j], 10);
-      if (data2 == -1 || data2 == -2) {
-        ignore++;
-      } else if (data2 > mConst().awakeAbove) {
-        awake++;
-      } else if (data2 > mConst().lightAbove) {
-        light++;
-      } else {
-        deep++;
-      }
-    }
-  }
-
-  // Add the end time overlay
-  if (tends !== null) {
-    var endsStopOverlay = {
-      verticalLine : {
-        name : "endstop",
-        x : tends,
-        lineWidth : 1,
-        yOffset : 0,
-        color : "rgb(255, 149, 0)",
-        shadow : false
-      }
-    };
-    canvasOverlayConf.show = true;
-    canvasOverlayConf.objects.push(endsStopOverlay);
-  }
-  return {
-    "tbegin" : tbegin,
-    "tends" : tends,
-    "deep" : deep,
-    "light" : light,
-    "awake" : awake,
-    "ignore" : ignore
-  };
-}
-
-/*
- * Prepare the data for the mail links
- */
-function generateCopyLinkData(base, splitup, smartOn, fromhr, frommin, tohr, tomin, goneoff) {
-
-  var timePoint = new Date(base);
-  var body = "<pre>";
-
-  for (var i = 0; i < splitup.length; i++) {
-    if (splitup[i] === "") {
-      continue;
-    }
-    body = body + timePoint.format("hh:mm") + "," + splitup[i] + "<br/>";
-    timePoint = timePoint.addMinutes(mConst().sampleIntervalMins);
-  }
-
-  // Add smart alarm info into CSV data
-  if (smartOn) {
-    body = body + fromhr + ":" + frommin + ",START<br/>" + tohr + ":" + tomin + ",END<br/>";
-    if (goneoff != "N") {
-      var goneoffstr = goneoff.substr(0, 2) + ":" + goneoff.substr(2, 2);
-      body = body + goneoffstr + ",ALARM<br/>";
-    }
-  }
-  return {
-    "body" : body + "</pre>",
-  };
-}
-
 /*******************************************************************************
  * 
  * Main process
@@ -326,372 +43,189 @@ $("document").ready(function() {
   }
 
   // Pick up parameters from URL
-  var baseStr = getParameterByName("base");
-  var base = new Date().valueOf();
-  if (baseStr !== "" && baseStr !== "null") {
-    base = parseInt(baseStr, 10);
-  }
-  var graph = getParameterByName("graph");
-  var fromhr = getParameterByName("fromhr");
-  var frommin = getParameterByName("frommin");
-  var tohr = getParameterByName("tohr");
-  var tomin = getParameterByName("tomin");
-  var smart = getParameterByName("smart");
   var vers = getParameterByName("vers");
-  var goneoff = getParameterByName("goneoff");
-  var emailto = decodeURIComponent(getParameterByName("emailto"));
-  var potoken = decodeURIComponent(getParameterByName("potoken"));
-  var pouser = decodeURIComponent(getParameterByName("pouser"));
-  var postat = decodeURIComponent(getParameterByName("postat"));
-  var swpdo = decodeURIComponent(getParameterByName("swpdo"));
-  var lifxToken = decodeURIComponent(getParameterByName("lifxtoken"));
-  var lifxTime = decodeURIComponent(getParameterByName("lifxtime"));
-  var swpstat = decodeURIComponent(getParameterByName("swpstat"));
-  var noset = getParameterByName("noset");
-  var token = getParameterByName("token");
-  var exptime = decodeURIComponent(getParameterByName("exptime"));
-  var usage = getParameterByName("usage");
-  var lazarus = getParameterByName("lazarus");
-  var hueip = getParameterByName("hueip");
-  var hueusername = getParameterByName("hueuser");
-  var hueid = getParameterByName("hueid");
-  var ifkey = decodeURIComponent(getParameterByName("ifkey"));
-  var ifstat = decodeURIComponent(getParameterByName("ifstat"));
-
-  var smartOn = smart === "Y";
-  var nosetOn = noset === "Y";
-  if (nosetOn) {
-    $(".noset").hide();
-  }
+  var key = decodeURIComponent(getParameterByName("key"));
+  var menuName1 = decodeURIComponent(getParameterByName("mn1"));
+  var menuName2 = decodeURIComponent(getParameterByName("mn2"));
+  var menuName3 = decodeURIComponent(getParameterByName("mn3"));
+  var menuName4 = decodeURIComponent(getParameterByName("mn4"));
+  var menuName5 = decodeURIComponent(getParameterByName("mn5"));
+  var menuName6 = decodeURIComponent(getParameterByName("mn6"));
+  var menuName7 = decodeURIComponent(getParameterByName("mn7"));
+  var menuName8 = decodeURIComponent(getParameterByName("mn8"));
+  var menuName9 = decodeURIComponent(getParameterByName("mn9"));
+  var menuName10 = decodeURIComponent(getParameterByName("mn10"));
+  var toggle1 = getParameterByName("t1");
+  var toggle2 = getParameterByName("t2");
+  var toggle3 = getParameterByName("t3");
+  var toggle4 = getParameterByName("t4");
+  var toggle5 = getParameterByName("t5");
+  var toggle6 = getParameterByName("t6");
+  var toggle7 = getParameterByName("t7");
+  var toggle8 = getParameterByName("t8");
+  var toggle9 = getParameterByName("t9");
+  var toggle10 = getParameterByName("t10");
 
   // Set screen fields
-  $("#emailto").val(emailto);
-  $("#ptoken").val(potoken);
-  $("#puser").val(pouser);
-  $("#lifxToken").val(lifxToken);
-  $("#lifxTime").val(lifxTime);
-  $("#swpdo").prop("checked", swpdo === "Y");
-  $("#presult").text(postat);
-  $("#swpstat").text(swpstat);
-  $("#exptime").text(exptime);
-  $("#usage").prop("checked", usage !== "N");
-  $("#hueip").val(hueip);
-  $("#hueuser").val(hueusername);
-  $("#hueid").val(hueid);
-  $("#lazarus").prop("checked", lazarus !== "N");
-  $("#ifkey").val(ifkey);
-  $("#ifstat").text(ifstat);
-
-  // Set the status bullets for pushover
-  if (postat === "OK") {
-    $("#lipushover").addClass("green");
-    $("#presult").addClass("green");
-  } else if (postat === "" || postat === null || postat === "Disabled") {
-    $("#lipushover").addClass("blue");
-    $("#presult").addClass("blue");
-  } else {
-    $("#lipushover").addClass("red");
-    $("#presult").addClass("red");
-  }
-
-  // Set the status bullets for smartwach pro
-  if (swpstat === "OK") {
-    $("#liswp").addClass("green");
-    $("#swpstat").addClass("green");
-  } else if (swpstat === "" || swpstat === null || swpstat === "Disabled") {
-    $("#liswp").addClass("blue");
-    $("#swpstat").addClass("blue");
-  } else {
-    $("#liswp").addClass("red");
-    $("#swpstat").addClass("red");
-  }
-
-  // Set the status bullets for LIFX
-  if (lifxToken === "") {
-    $("#lilifx").addClass("blue");
-  } else {
-    $("#lilifx").addClass("green");
-  }
-
-  // Set the status bullets for Hue
-  if (hueip === "") {
-    $("#lihue").addClass("blue");
-  } else {
-    $("#lihue").addClass("green");
-  }
+  $("#key").val(key);
+  $("#menuName1").val(menuName1);
+  $("#menuName2").val(menuName2);
+  $("#menuName3").val(menuName3);
+  $("#menuName4").val(menuName4);
+  $("#menuName5").val(menuName5);
+  $("#menuName6").val(menuName6);
+  $("#menuName7").val(menuName7);
+  $("#menuName8").val(menuName8);
+  $("#menuName9").val(menuName9);
+  $("#menuName10").val(menuName10);
+  $("#toggle1").prop("checked", toggle1 === "Y");
+  $("#toggle2").prop("checked", toggle2 === "Y");
+  $("#toggle3").prop("checked", toggle3 === "Y");
+  $("#toggle4").prop("checked", toggle4 === "Y");
+  $("#toggle5").prop("checked", toggle5 === "Y");
+  $("#toggle6").prop("checked", toggle6 === "Y");
+  $("#toggle7").prop("checked", toggle7 === "Y");
+  $("#toggle8").prop("checked", toggle8 === "Y");
+  $("#toggle9").prop("checked", toggle9 === "Y");
+  $("#toggle10").prop("checked", toggle10 === "Y");
   
-  // Set the usage bullet to indicate active or not
-  if (usage !== "N") {
-    $("#liusage").addClass("green");
-  } else {
-    $("#liusage").addClass("blue");
-  }
-  
-  // Set the lazarus bullet to indicate active or not
-  if (lazarus !== "N") {
-    $("#lilazarus").addClass("green");
-  } else {
-    $("#lilazarus").addClass("blue");
-  }
-  
-  // Set the status bullets for pushover
-  if (ifstat === "OK") {
-    $("#liif").addClass("green");
-    $("#ifstat").addClass("green");
-  } else if (ifstat === "" || ifstat === null || ifstat === "Disabled") {
-    $("#liif").addClass("blue");
-    $("#ifstat").addClass("blue");
-  } else {
-    $("#liif").addClass("red");
-    $("#ifstat").addClass("red");
-  }
-  
-  // Any failed exports are automatically opened on load
-  $("li.red").removeClass("liclosed").addClass("liopen");
-
   // Set version
   $("#version").text(parseInt(vers, 10) / 10);
-  $("#sleep-time").text(new Date(base).format(mConst().displayDateFmt));
-
-  if ((new Date().valueOf()) % 10 === 0) {
-    $("#info-message").css("display", "block");
-  }
-
-  $(".licollapse > p").click(function() {
-    if ($(this).parent().hasClass("liopen")) {
-      $(this).parent().removeClass("liopen").addClass("liclosed");
-    } else {
-      $(this).parent().removeClass("liclosed").addClass("liopen");
-    }
-  });
 
   // Show version warning
-  if (!nosetOn) {
-    setScreenMessageBasedOnVersion(vers);
-  }
+  setScreenMessageBasedOnVersion(vers);
 
-  var splitup = graph.split("!");
-  var more = new Array();
+  // Move down
+  $(".downicon").click(function() {
+    var tr = $(this).parent().parent();
+    var nexttr = tr.next();
 
-  // Build graph data
-  buildGraphDataSet(base, splitup, more);
+    // Read
+    var currentText = $(".namefield", tr).val();
+    var nextText = $(".namefield", nexttr).val();
+    var currentToggle = $(".togglechk", tr).is(':checked');
+    var nextToggle = $(".togglechk", nexttr).is(':checked');
 
-  // Declare canvas overlay which will be populated as we go on
-  var canvasOverlayConf = {
-    show : false,
-    objects : []
-  };
-
-  // Build ignore bars
-  populateIgnore(base, canvasOverlayConf, splitup, $("#chart1").width());
-
-  // Return start and stop times
-  startStopAlarm(smartOn, fromhr, frommin, tohr, tomin, base, canvasOverlayConf, splitup);
-
-  // Return stats
-  var out = calculateStats(base, splitup, goneoff, canvasOverlayConf);
-
-  // Populate the statistics area
-  $("#ttotal").text(hrsmin((out.deep + out.light + out.awake + out.ignore) * mConst().sampleIntervalMins));
-  $("#tawake").text(hrsmin(out.awake * mConst().sampleIntervalMins));
-  $("#tlight").text(hrsmin(out.light * mConst().sampleIntervalMins));
-  $("#tdeep").text(hrsmin(out.deep * mConst().sampleIntervalMins));
-  $("#tignore").text(hrsmin(out.ignore * mConst().sampleIntervalMins));
-
-  // If we have a begin and an end then show this in our 'HealthKit' datapoint
-  // section and
-  // Make it exportable
-  if (out.tbegin !== null && out.tends !== null) {
-    $("#swpnodata").hide();
-    $("#tstarts").text(out.tbegin.format(mConst().iosDateFormat));
-    $("#tends").text(out.tends.format(mConst().iosDateFormat));
-    var swpUrl = "swpro2hk://?source=Alvin&starts=" + out.tbegin.format(mConst().swpUrlDate) + "&ends=" + out.tends.format(mConst().swpUrlDate);
-    if (token != null && token !== "") {
-      swpUrl += "&at=" + token;
-    }
-    $("#swp").prop("href", swpUrl);
-    if (!nosetOn) {
-      $("#swp").click(function() {
-        setTimeout(function() {
-          window.location.href = "pebblejs://close";
-        }, 250);
-      });
-    }
-  } else {
-    $("#swp").hide();
-  }
-
-  $("#swplink").prop("href", mConst().swpAppStoreUrl);
-  $("#swplink").click(function() {
-    setTimeout(function() {
-      window.location.href = "pebblejs://close";
-    }, 250);
+    // Write
+    $(".namefield", tr).val(nextText);
+    $(".namefield", nexttr).val(currentText);
+    $(".togglechk", tr).prop("checked", nextToggle);
+    $(".togglechk", nexttr).prop("checked", currentToggle);
   });
 
-  // Build the pie chart data
-  var data2 = [ [ "Restless", out.awake ], [ "Light", out.light ], [ "Deep", out.deep ], [ "Ignore", out.ignore ] ];
+  // Move up
+  $(".upicon").click(function() {
+    var tr = $(this).parent().parent();
+    var prevtr = tr.prev();
 
-  // Prepare the graph
-  $(document).ready(function() {
+    // Read
+    var currentText = $(".namefield", tr).val();
+    var prevText = $(".namefield", prevtr).val();
+    var currentToggle = $(".togglechk", tr).is(':checked');
+    var prevToggle = $(".togglechk", prevtr).is(':checked');
 
-    document.plot1 = $.jqplot("chart1", [ more ], {
-      grid : {
-        background : "#2066C7",
-        gridLineColor : "#1E75D7",
-        borderColor : "#1E75D7",
-        shadow : false
-      },
-      animate : true,
-      canvasOverlay : canvasOverlayConf,
-      series : [ {
-        showMarker : false,
-        breakOnNull : true,
-        color : "#40ADEB",
-        label : new Date(base).format("yyyy-MM-dd"),
-        shadow : false
-      } ],
-      // You can specify options for all axes on the plot at once with
-      // the axesDefaults object. Here, we're using a canvas renderer
-      // to draw the axis label which allows rotated text.
-      axesDefaults : {
-        labelRenderer : $.jqplot.CanvasAxisLabelRenderer,
-        showTicks : false,
-        showTickMarks : false
-      },
-      legend : {
-        show : false,
-        location : "ne"
-      },
-      // An axes object holds options for all axes.
-      // Allowable axes are xaxis, x2axis, yaxis, y2axis, y3axis, ...
-      // Up to 9 y axes are supported.
-      axes : {
-        // options for each axis are specified in seperate option
-        // objects.
-        xaxis : {
-          renderer : $.jqplot.DateAxisRenderer,
-          tickRenderer : $.jqplot.CanvasAxisTickRenderer,
-          tickOptions : {
-            formatString : "%R",
-            angle : -30,
-            fontSize : "8pt",
-            textColor : "#40ADEB"
-          },
-          tickInterval : "1 hour",
-          // Turn off "padding". This will allow data point to lie
-          // on the
-          // edges of the grid. Default padding is 1.2 and will
-          // keep all
-          // points inside the bounds of the grid.
-          pad : 0,
-          showTicks : true,
-          showTickMarks : true,
-          min : new Date(base)
-        },
-        yaxis : {
-          ticks : [ mConst().chartBottom, mConst().lightAbove, mConst().awakeAbove, mConst().chartTop ],
-          labelRenderer : $.jqplot.CanvasAxisLabelRenderer,
-          label : "Movement",
-          min : mConst().chartBottom,
-          max : mConst().chartTop,
-          labelOptions : {
-            textColor : "#1898FF"
-          }
-        }
-      }
-    });
-
-    document.plot2 = jQuery.jqplot("chart2", [ data2 ], {
-      grid : {
-        background : "#FF7D48",
-        borderColor : "#FF7D48",
-        shadow : false
-      },
-      seriesColors : [ "#FFFF92", "#FFA966", "#FF3C31", "rgb(130,130,130)" ],
-      seriesDefaults : {
-        // Make this a pie chart.
-        renderer : jQuery.jqplot.PieRenderer,
-        rendererOptions : {
-          // Put data labels on the pie slices.
-          // By default, labels show the percentage of the slice.
-          showDataLabels : true,
-          shadow : false
-        }
-      },
-      legend : {
-        show : true,
-        location : "e"
-      }
-    });
-
+    // Write
+    $(".namefield", tr).val(prevText);
+    $(".namefield", prevtr).val(currentText);
+    $(".togglechk", tr).prop("checked", prevToggle);
+    $(".togglechk", prevtr).prop("checked", currentToggle);
   });
 
   // Handle the Save and reset option
   $(".save").click(function() {
     var configData = {
       action : "save",
-      emailto : safeTrim($("#emailto").val()),
-      pouser : safeTrim($("#puser").val()),
-      potoken : safeTrim($("#ptoken").val()),
-      swpdo : $("#swpdo").is(':checked') ? "Y" : "N",
-      usage : $("#usage").is(':checked') ? "Y" : "N",
-      lifxtoken : safeTrim($("#lifxToken").val()),
-      lifxtime : safeTrim($("#lifxTime").val()),
-      hueip : safeTrim($("#hueip").val()),
-      hueuser : safeTrim($("#hueuser").val()),
-      hueid : safeTrim($("#hueid").val()),
-      lazarus : $("#lazarus").is(':checked') ? "Y" : "N",
-      testsettings : $("#testsettings").is(':checked') ? "Y" : "N",
-      ifkey :safeTrim( $("#ifkey").val())
+      key : safeTrim($("#key").val()),
+      mn1 : safeTrim($("#menuName1").val()),
+      mn2 : safeTrim($("#menuName2").val()),
+      mn3 : safeTrim($("#menuName3").val()),
+      mn4 : safeTrim($("#menuName4").val()),
+      mn5 : safeTrim($("#menuName5").val()),
+      mn6 : safeTrim($("#menuName6").val()),
+      mn7 : safeTrim($("#menuName7").val()),
+      mn8 : safeTrim($("#menuName8").val()),
+      mn9 : safeTrim($("#menuName9").val()),
+      mn10 : safeTrim($("#menuName10").val()),
+      t1 : $("#toggle1").is(':checked') ? "Y" : "N",
+      t2 : $("#toggle2").is(':checked') ? "Y" : "N",
+      t3 : $("#toggle3").is(':checked') ? "Y" : "N",
+      t4 : $("#toggle4").is(':checked') ? "Y" : "N",
+      t5 : $("#toggle5").is(':checked') ? "Y" : "N",
+      t6 : $("#toggle6").is(':checked') ? "Y" : "N",
+      t7 : $("#toggle7").is(':checked') ? "Y" : "N",
+      t8 : $("#toggle8").is(':checked') ? "Y" : "N",
+      t9 : $("#toggle9").is(':checked') ? "Y" : "N",
+      t10 : $("#toggle10").is(':checked') ? "Y" : "N"
     };
+    var move = true;
+    while (move) {
+      move = false;
+
+      if (configData.mn1 === "" && configData.mn2 !== "") {
+        configData.mn1 = configData.mn2;
+        configData.t1 = configData.t2;
+        configData.mn2 = "";
+        configData.t2 = "N";
+        move = true;
+      }
+      if (configData.mn2 === "" && configData.mn3 !== "") {
+        configData.mn2 = configData.mn3;
+        configData.t2 = configData.t3;
+        configData.mn3 = "";
+        configData.t3 = "N";
+        move = true;
+      }
+      if (configData.mn3 === "" && configData.mn4 !== "") {
+        configData.mn3 = configData.mn4;
+        configData.t3 = configData.t4;
+        configData.mn4 = "";
+        configData.t4 = "N";
+        move = true;
+      }
+      if (configData.mn4 === "" && configData.mn5 !== "") {
+        configData.mn4 = configData.mn5;
+        configData.t4 = configData.t5;
+        configData.mn5 = "";
+        configData.t5 = "N";
+        move = true;
+      }
+      if (configData.mn5 === "" && configData.mn6 !== "") {
+        configData.mn5 = configData.mn6;
+        configData.t5 = configData.t6;
+        configData.mn6 = "";
+        configData.t6 = "N";
+        move = true;
+      }
+      if (configData.mn6 === "" && configData.mn7 !== "") {
+        configData.mn6 = configData.mn7;
+        configData.t6 = configData.t7;
+        configData.mn7 = "";
+        configData.t7 = "N";
+        move = true;
+      }
+      if (configData.mn7 === "" && configData.mn8 !== "") {
+        configData.mn7 = configData.mn8;
+        configData.t7 = configData.t8;
+        configData.mn8 = "";
+        configData.t8 = "N";
+        move = true;
+      }
+      if (configData.mn8 === "" && configData.mn9 !== "") {
+        configData.mn8 = configData.mn9;
+        configData.t8 = configData.t9;
+        configData.mn9 = "";
+        configData.t9 = "N";
+        move = true;
+      }
+      if (configData.mn9 === "" && configData.mn10 !== "") {
+        configData.mn9 = configData.mn10;
+        configData.t9 = configData.t10;
+        configData.mn10 = "";
+        configData.t10 = "N";
+        move = true;
+      }
+    }
     document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(configData));
   });
 
-  // Send an email containing CSV data
-  $("#mail").removeAttr("disabled");
-  $("#mail").click(function() {
-
-    // Get email address
-    var emailto = $("#emailto").val();
-
-    // Ensure address supplied
-    if (emailto === "" || !validateEmail(emailto)) {
-      $("#emailSendResult").text(mConst().emailAddressMandatory);
-      $("#emailSendResult").addClass("red");
-      return;
-    }
-
-    // Extract data
-    var cpy = generateCopyLinkData(base, splitup, smartOn, fromhr, frommin, tohr, tomin, goneoff);
-
-    var url = "<a href='" + mConst().url + vers + ".html" + "?base=" + base + "&graph=" + graph + "&fromhr=" + fromhr + "&tohr=" + tohr + "&frommin=" + frommin + "&tomin=" + tomin + "&smart=" + smart + "&vers=" + vers + "&goneoff=" + goneoff + "&emailto=" + encodeURIComponent(emailto) + "&noset=Y" + "'>" + mConst().report + "</a><br/>";
-
-    // Build email json
-    var email = {
-      "from" : "Alvin <noreply@alvin.co.uk>",
-      "to" : emailto,
-      "subject" : "Alvin-" + new Date(base).format("yyyy-MM-dd"),
-      "message" : mConst().emailHeader2 + url + mConst().emailHeader + cpy.body + mConst().emailFooter1 + mConst().emailFooter2
-    };
-
-    // Disable button and put out sending text
-    $("#mail").attr("disabled", "disabled");
-    $("#emailSendResult").removeClass("red").removeClass("green");
-    $("#emailSendResult").text(mConst().sendingEmail);
-
-    // Send to server and await response
-    sendMailViaServer(email, function(stat, resp) {
-      if (stat === 1) {
-        $("#emailSendResult").addClass("green");
-      } else {
-        $("#emailSendResult").addClass("red");
-      }
-      $("#emailSendResult").text(resp);
-      $("#mail").removeAttr("disabled");
-
-    })
-
-  });
-
 });
-

@@ -2,11 +2,12 @@
 <project name="alvin" basedir="." default="all">
 
 	<property name="ver" value="10"/>
-	<property name="inc" value="3"/>
+	<property name="inc" value="9"/>
 	<property name="builddir" value="website/alvin/build"/>
 	<property name="srcdir" value="website/alvin"/>
 	<property name="test.dir" value="../Desktop/alvin"/>
 	<property name="img" value="/img"/>
+	<property name="jquery" value="/jquery"/>
 
 	<target name="all"  description="all">
 		<antcall target="shrink" inheritrefs="true" inheritall="true">
@@ -45,6 +46,7 @@
 			<param name="min.file" value="currentversion.json" />
 		</antcall>
 		<antcall target="copyimages" inheritrefs="true" inheritall="true" />
+		<antcall target="copyjquery" inheritrefs="true" inheritall="true" />
 	</target>
 
 	<target name="shrink" description="shrink">
@@ -85,6 +87,13 @@
 		<echo message="Copying images from ${srcdir}${img} to ${test.dir}${img}"/>
 		<copy todir="${test.dir}${img}" overwrite="true" force="true">
 			<fileset dir="${srcdir}${img}"/>
+		</copy>
+	</target>
+	
+	<target name="copyjquery" description="copyjquery">
+		<echo message="Copying jquery from ${srcdir}${jquery} to ${test.dir}${jquery}"/>
+		<copy todir="${test.dir}${jquery}" overwrite="true" force="true">
+			<fileset dir="${srcdir}${jquery}"/>
 		</copy>
 	</target>
 

@@ -23,75 +23,6 @@
  */
 
 /*
- * Constants
- */
-function mUtil() {
-  return {
-    emailUrl : "json_email.php",
-    emailToken : "alvin20",
-    okResponse : "Sent OK",
-    failResponse : "Failed to send with ",
-    failGeneral : "Failed to send"
-  };
-}
-
-function hrsmin(value) {
-  var hours = Math.floor(value / 60);
-  var minutes = value % 60;
-  return fixLen(String(hours)) + ":" + fixLen(String(minutes));
-}
-
-/*
- * Some date functions
- */
-Date.prototype.format = function(format) // author: meizz
-{
-  var monName = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
-  var dayName = [ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ];
-  var o = {
-    "M+" : this.getMonth() + 1, // month
-    "d+" : this.getDate(), // day
-    "h+" : this.getHours(), // hour
-    "i+" : this.getHours() + 1, // hour + 1
-    "m+" : this.getMinutes(), // minute
-    "s+" : this.getSeconds(), // second
-    "q+" : Math.floor((this.getMonth() + 3) / 3), // quarter
-    "S" : this.getMilliseconds()
-  // millisecond
-  }
-
-  if (/(y+)/.test(format)) {
-    format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
-  }
-  for ( var k in o) {
-    if (new RegExp("(" + k + ")").test(format)) {
-      format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length));
-    }
-  }
-  if (/(N+)/.test(format)) {
-    format = format.replace(RegExp.$1, monName[this.getMonth()]);
-  }
-  if (/(W+)/.test(format)) {
-    format = format.replace(RegExp.$1, dayName[this.getDay()]);
-  }
-  return format;
-}
-
-Date.prototype.addMinutes = function(minutes) {
-  var copiedDate = new Date(this.getTime());
-  return new Date(copiedDate.getTime() + minutes * 60000);
-}
-
-/*
- * Fix a string to 2 characters long prefixing a zero
- */
-function fixLen(inStr) {
-  if (inStr == null || inStr.length > 1)
-    return inStr;
-  return "0" + inStr;
-}
-
-/*
  * Extract parameters from URL
  */
 function getParameterByName(name) {
@@ -140,13 +71,6 @@ function scaleToViewport() {
   $(".vpwidth").width(viewportWidth);
   $(".vpheight").height(viewportWidth * 250 / 318);
 
-  // Ask the charts to replot
-  if (typeof document.plot1 !== "undefined") {
-    document.plot1.replot();
-  }
-  if (typeof document.plot2 !== "undefined") {
-    document.plot2.replot();
-  }
 }
 
 /*
@@ -155,44 +79,6 @@ function scaleToViewport() {
 function adjustForViewport() {
   scaleToViewport();
   $(window).resize(scaleToViewport);
-}
-
-/*
- * Send an email via the server php
- */
-function sendMailViaServer(email, resp) {
-  try {
-    var msg = "email=" + encodeURIComponent(JSON.stringify(email));
-
-    var req = new XMLHttpRequest();
-    req.open("POST", mUtil().emailUrl, true);
-    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    req.setRequestHeader("X-Client-token", mUtil().emailToken);
-    req.onreadystatechange = function(e) {
-      if (req.readyState == 4) {
-        if (req.status == 200) {
-          resp(1, mUtil().okResponse);
-        } else {
-          resp(0, mUtil().failResponse + req.status);
-        }
-      }
-    }
-    req.onerror = function(ex) {
-      resp(0, mUtil().failGeneral);
-    }
-    req.send(msg);
-  } catch (err) {
-    resp(0, mUtil().failResponse + err.message);
-  }
-}
-
-/*
- * Validate email address
- */
-function validateEmail(email) 
-{
-    var re = /[^\s@]+@[^\s@]+\.[^\s@]+/;
-    return re.test(email);
 }
 
 /*

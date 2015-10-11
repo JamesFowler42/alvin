@@ -29,11 +29,11 @@
  * THE SOFTWARE.
  */
 -->
-<script type="text/javascript" src="jqquery/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="jquery/jquery-1.11.3.min.js"></script>
 
 <script type="text/javascript" src="utils.js?v=1"></script>
 <link rel="stylesheet" type="text/css" href="config.css?v=1" />
-<!-- <script type="text/javascript" src="config.js?v=1"></script>-->
+<script type="text/javascript" src="config.js?v=1"></script>
 
 </head>
 <body>
@@ -42,11 +42,9 @@
       <form action="">
         <div id="version" class="vpwidth">v0.5</div>
         <h2 id="title">
-          <img src="img/alvin24.png" />Alvin IFTTT Control Application
+          <img src="img/alvin24.png" />Alvin IFTTT Control App
         </h2>
-        <p class="error verswarning" style="display: none;">
-          You are on an old version of Alvin. To get all the new features please upgrade. 
-        </p>
+        <p class="error verswarning" style="display: none;">You are on an old version of Alvin. To get all the new features please upgrade.</p>
         <p class="error versbeta" style="display: none;">This is a beta version of Alvin. Please report any issues you find.</p>
         <p class="error versproblem" style="display: none;">Unable to determine current version of Alvin.</p>
         <div id="info-message" style="display: none">
@@ -56,30 +54,88 @@
         </div>
         <h3 class="exporthead">Configuration</h3>
         <div class="exportwrap">
-        <div class="keyarea">
-        <label for="key">Key:</label><input id="key" type="text" maxlength="50" />
-        </div>
-        <table class="menuitems">
-          <tr><td class="tdicon"></td><td class="tdicon"></td><td class="tdtxt">Name</td><td class="tdchk">Toggle</td></tr>
-          <tr class="tralt"><td class="tdicon"></td><td class="tdicon"><img src="img/down.png" class="downicon"/></td><td  class="tdtxt"><input type="text" maxlength="20" class="namefield"/></td><td class="tdchk"><input type="checkbox" class="togglechk"/></td></tr>
-          <tr><td class="tdicon"><img src="img/up.png" class="upicon"/></td><td class="tdicon"><img src="img/down.png" class="downicon"/></td><td  class="tdtxt"><input type="text" maxlength="20" class="namefield" /></td><td class="tdchk"><input type="checkbox" class="togglechk" /></td></tr>
-          <tr class="tralt"><td class="tdicon"><img src="img/up.png" class="upicon"/></td><td class="tdicon"><img src="img/down.png" class="downicon"/></td><td  class="tdtxt"><input type="text" maxlength="20" class="namefield" /></td><td class="tdchk"><input type="checkbox" class="togglechk" /></td></tr>
-          <tr><td class="tdicon"><img src="img/up.png" class="upicon"/></td><td class="tdicon"><img src="img/down.png" class="downicon"/></td><td  class="tdtxt"><input type="text" maxlength="20" class="namefield" /></td><td class="tdchk"><input type="checkbox" class="togglechk" /></td></tr>
-          <tr class="tralt"><td class="tdicon"><img src="img/up.png" class="upicon"/></td><td class="tdicon"><img src="img/down.png" class="downicon"/></td><td  class="tdtxt"><input type="text" maxlength="20"  class="namefield"/></td><td class="tdchk"><input type="checkbox" class="togglechk" /></td></tr>
-          <tr><td class="tdicon"><img src="img/up.png" class="upicon"/></td><td class="tdicon"><img src="img/down.png" class="downicon"/></td><td  class="tdtxt"><input type="text" maxlength="20"  class="namefield"/></td><td class="tdchk"><input type="checkbox" class="togglechk" /></td></tr>
-          <tr class="tralt"><td class="tdicon"><img src="img/up.png" class="upicon"/></td><td class="tdicon"><img src="img/down.png" class="downicon"/></td><td  class="tdtxt"><input type="text" maxlength="20"  class="namefield"/></td><td class="tdchk"><input type="checkbox" class="togglechk" /></td></tr>
-          <tr><td class="tdicon"><img src="img/up.png" class="upicon"/></td><td class="tdicon"><img src="img/down.png" class="downicon"/></td><td  class="tdtxt"><input type="text" maxlength="20" class="namefield" /></td><td class="tdchk"><input type="checkbox" class="togglechk" /></td></tr>
-          <tr class="tralt"><td class="tdicon"><img src="img/up.png" class="upicon"/></td><td class="tdicon"><img src="img/down.png"class="downicon" /></td><td  class="tdtxt"><input type="text" maxlength="20"  class="namefield"/></td><td class="tdchk"><input type="checkbox" class="togglechk" /></td></tr>
-          <tr><td class="tdicon"><img src="img/up.png" class="upicon"/></td><td class="tdicon"></td><td  class="tdtxt"><input type="text" maxlength="20" class="namefield" /></td><td class="tdchk"><input type="checkbox"  class="togglechk" /></td></tr>
-        </table>
-         <input class="noset save" type="button" id="save" value="Save" />
+          <div class="keyarea">
+            <label for="key">Your key is:</label><input id="key" type="text" maxlength="50" placeholder="IFTTT Maker Secret Key" /> See <a href="https://ifttt.com/maker">IFTTT Maker</a> for info.
+          </div>
+          <table class="menuitems">
+            <tr>
+              <td class="tdicon"></td>
+              <td class="tdicon"></td>
+              <td class="tdtxt">Name</td>
+              <td class="tdchk">Toggle</td>
+            </tr>
+            <tr class="tralt">
+              <td class="tdicon"></td>
+              <td class="tdicon"><img src="img/down.png" class="downicon" /></td>
+              <td class="tdtxt"><input id="menuName1" type="text" maxlength="20" class="namefield" pattern="[A-Za-z0-9 ]" title="Action name" placeholder="1st menu name" /></td>
+              <td class="tdchk"><input id="toggle1" type="checkbox" class="togglechk" /></td>
+            </tr>
+            <tr>
+              <td class="tdicon"><img src="img/up.png" class="upicon" /></td>
+              <td class="tdicon"><img src="img/down.png" class="downicon" /></td>
+              <td class="tdtxt"><input id="menuName2" type="text" maxlength="20" class="namefield" pattern="[A-Za-z0-9 ]" title="Action name" placeholder="2nd menu name" /></td>
+              <td class="tdchk"><input id="toggle2" type="checkbox" class="togglechk" /></td>
+            </tr>
+            <tr class="tralt">
+              <td class="tdicon"><img src="img/up.png" class="upicon" /></td>
+              <td class="tdicon"><img src="img/down.png" class="downicon" /></td>
+              <td class="tdtxt"><input id="menuName3" type="text" maxlength="20" class="namefield" pattern="[A-Za-z0-9 ]" title="Action name" placeholder="3rd menu name" /></td>
+              <td class="tdchk"><input id="toggle3" type="checkbox" class="togglechk" /></td>
+            </tr>
+            <tr>
+              <td class="tdicon"><img src="img/up.png" class="upicon" /></td>
+              <td class="tdicon"><img src="img/down.png" class="downicon" /></td>
+              <td class="tdtxt"><input id="menuName4" type="text" maxlength="20" class="namefield" pattern="[A-Za-z0-9 ]" title="Action name" placeholder="4th menu name" /></td>
+              <td class="tdchk"><input id="toggle4" type="checkbox" class="togglechk" /></td>
+            </tr>
+            <tr class="tralt">
+              <td class="tdicon"><img src="img/up.png" class="upicon" /></td>
+              <td class="tdicon"><img src="img/down.png" class="downicon" /></td>
+              <td class="tdtxt"><input id="menuName5" type="text" maxlength="20" class="namefield" pattern="[A-Za-z0-9 ]" title="Action name" placeholder="5th menu name" /></td>
+              <td class="tdchk"><input id="toggle5" type="checkbox" class="togglechk" /></td>
+            </tr>
+            <tr>
+              <td class="tdicon"><img src="img/up.png" class="upicon" /></td>
+              <td class="tdicon"><img src="img/down.png" class="downicon" /></td>
+              <td class="tdtxt"><input id="menuName6" type="text" maxlength="20" class="namefield" pattern="[A-Za-z0-9 ]" title="Action name" placeholder="6th menu name" /></td>
+              <td class="tdchk"><input id="toggle6" type="checkbox" class="togglechk" /></td>
+            </tr>
+            <tr class="tralt">
+              <td class="tdicon"><img src="img/up.png" class="upicon" /></td>
+              <td class="tdicon"><img src="img/down.png" class="downicon" /></td>
+              <td class="tdtxt"><input id="menuName7" type="text" maxlength="20" class="namefield" pattern="[A-Za-z0-9 ]" title="Action name" placeholder="7th menu name" /></td>
+              <td class="tdchk"><input id="toggle7" type="checkbox" class="togglechk" /></td>
+            </tr>
+            <tr>
+              <td class="tdicon"><img src="img/up.png" class="upicon" /></td>
+              <td class="tdicon"><img src="img/down.png" class="downicon" /></td>
+              <td class="tdtxt"><input id="menuName8" type="text" maxlength="20" class="namefield" pattern="[A-Za-z0-9 ]" title="Action name" placeholder="8th menu name" /></td>
+              <td class="tdchk"><input id="toggle8" type="checkbox" class="togglechk" /></td>
+            </tr>
+            <tr class="tralt">
+              <td class="tdicon"><img src="img/up.png" class="upicon" /></td>
+              <td class="tdicon"><img src="img/down.png" class="downicon" /></td>
+              <td class="tdtxt"><input id="menuName9" type="text" maxlength="20" class="namefield" pattern="[A-Za-z0-9 ]" title="Action name" placeholder="9th menu name" /></td>
+              <td class="tdchk"><input id="toggle9" type="checkbox" class="togglechk" /></td>
+            </tr>
+            <tr>
+              <td class="tdicon"><img src="img/up.png" class="upicon" /></td>
+              <td class="tdicon"></td>
+              <td class="tdtxt"><input id="menuName10" type="text" maxlength="20" class="namefield" pattern="[A-Za-z0-9 ]" title="Action name" placeholder="10th menu name" /></td>
+              <td class="tdchk"><input id="toggle10" type="checkbox" class="togglechk" /></td>
+            </tr>
+          </table>
+          <p class="small indent">The menu names are used on your Pebble screen. They are also translated to the IFTTT Maker 'event name'. They are made lowercase and spaces become underscores. For example, menu 'My Bedroom Light' becomes event 'my_bedroom_light'.</p>
+          <p class="small indent">If 'toggle' is ticked, then the menu item will have a checkbox on your Pebble screen. Turning off will send an '_off' suffix, turning on will send an '_on' suffix. For example, 'my_bedroom_light_off' and 'my_bedroom_light_on' respectively.</p>
+          <p class="small indent">Clicking 'save' will fire an IFTTT Maker event called 'alvin_test', to allow you to confirm the key is correct.</p>
+          <input class="noset save" type="button" id="save" value="Save" />
         </div>
       </form>
       <h3>See also</h3>
       <ul>
-        <li><p>Alvin is free and will remain so, but requires hosting space, domain names and I require an occasional motivational coffee. Please consider a tiny donation. (warning: slow button)</p>
+        <li><p>Alvin is free and will remain so, but requires hosting space, and I require an occasional motivational coffee. Please consider a tiny donation. (warning: slow button)</p>
           <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-            <input type="hidden" name="cmd" value="_s-xclick" /> <input type="hidden" name="hosted_button_id" value="ECS3FWQLRZ5SW" /> <input type="image" src="https://www.paypalobjects.com/en_GB/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online." /> <img alt="" border="0" src="https://www.paypalobjects.com/en_GB/i/scr/pixel.gif" width="1" height="1" />
+            <input type="hidden" name="cmd" value="_s-xclick"> <input type="hidden" name="hosted_button_id" value="G4NFMP2385RLY"> <input type="image" src="https://www.paypalobjects.com/en_GB/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online."> <img alt="" border="0" src="https://www.paypalobjects.com/en_GB/i/scr/pixel.gif" width="1" height="1">
           </form></li>
       </ul>
       <p class="centre small">&copy; 2015 James Fowler</p>
