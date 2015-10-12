@@ -22,111 +22,13 @@
  * THE SOFTWARE.
  */
 
-/*global window, nvl, mConst, fixLen, pushoverTransmit, smartwatchProTransmit, addBedTimePin, addSmartAlarmPin, getQuoteOfTheDay, turnLifxLightsOn, turnHueLightsOn, iftttMakerInterfaceAlarm, iftttMakerInterfaceData, iftttMakerInterfaceBedtime */
-
-/*
- * Reset log
- */
-function resetWithPreserve() {
-  console.log("resetWithPreserve");
-  var version = window.localStorage.getItem("version");
-  var fromhr = window.localStorage.getItem("fromhr");
-  var tohr = window.localStorage.getItem("tohr");
-  var frommin = window.localStorage.getItem("frommin");
-  var tomin = window.localStorage.getItem("tomin");
-  var smart = window.localStorage.getItem("smart");
-  var emailto = window.localStorage.getItem("emailto");
-  var pouser = window.localStorage.getItem("pouser");
-  var postat = window.localStorage.getItem("postat");
-  var potoken = window.localStorage.getItem("potoken");
-  var swpdo = window.localStorage.getItem("swpdo");
-  var swpstat = window.localStorage.getItem("swpstat");
-  var exptime = window.localStorage.getItem("exptime");
-  var usage = window.localStorage.getItem("usage");
-  var lazarus = window.localStorage.getItem("lazarus");
-  var autoReset = window.localStorage.getItem("autoReset");
-  var quote = window.localStorage.getItem("quote");
-  var lifxToken = window.localStorage.getItem("lifx-token");
-  var lifxTime = window.localStorage.getItem("lifx-time");
-  var hueip =  window.localStorage.getItem("hueip");
-  var hueusername =  window.localStorage.getItem("hueusername");
-  var hueid = window.localStorage.getItem("hueid");
-  var ifkey = window.localStorage.getItem("ifkey");
-  var ifstat = window.localStorage.getItem("ifstat");
-  window.localStorage.clear();
-  window.localStorage.setItem("version", nvl(version, mConst().versionDef));
-  window.localStorage.setItem("smart", nvl(smart, mConst().smartDef));
-  window.localStorage.setItem("fromhr", nvl(fromhr, mConst().fromhrDef));
-  window.localStorage.setItem("frommin", nvl(frommin, mConst().fromminDef));
-  window.localStorage.setItem("tohr", nvl(tohr, mConst().tohrDef));
-  window.localStorage.setItem("tomin", nvl(tomin, mConst().tominDef));
-  window.localStorage.setItem("emailto", nvl(emailto, ""));
-  window.localStorage.setItem("pouser", nvl(pouser, ""));
-  window.localStorage.setItem("postat", nvl(postat, ""));
-  window.localStorage.setItem("potoken", nvl(potoken, ""));
-  window.localStorage.setItem("swpdo", nvl(swpdo, ""));
-  window.localStorage.setItem("swpstat", nvl(swpstat, ""));
-  window.localStorage.setItem("exptime", nvl(exptime, ""));
-  window.localStorage.setItem("usage", nvl(usage, "Y"));
-  window.localStorage.setItem("lazarus", nvl(lazarus, "Y"));
-  window.localStorage.setItem("autoReset", nvl(autoReset, "0"));
-  window.localStorage.setItem("quote", nvl(quote, ""));
-  window.localStorage.setItem("lifx-token", nvl(lifxToken, ""));
-  window.localStorage.setItem("lifx-time", nvl(lifxTime, mConst().lifxTimeDef));
-  window.localStorage.setItem("hueip", nvl(hueip, ""));
-  window.localStorage.setItem("hueusername", nvl(hueusername, ""));
-  window.localStorage.setItem("hueid", nvl(hueid, ""));
-  window.localStorage.setItem("ifkey", nvl(ifkey, ""));
-  window.localStorage.setItem("ifstat", nvl(ifstat, ""));
-}
-
-/*
- * Returns the platform
- */
-function getPlatform() {
-  if (Pebble.getActiveWatchInfo) {
-    var watchinfo = Pebble.getActiveWatchInfo();
-    var platform = watchinfo.platform;
-    return platform;
-  } else {
-    return "aplite" ;
-  }
-}
-
-/*
- * Which platforms require time zone correction
- */
-function isTimeZoneCorrectionRequired() {
-   return (getPlatform() === "aplite" );
-}
-
-/*
- * Store data returned from the watch
- */
-function storePointInfo(point, biggest) {
-  var entry = "P" + point;
-  if (biggest === 0) // Don't pass -1 across the link but 0 really means null
-    biggest = -1; // Null
-  else if (biggest === 5000)
-    biggest = -2; // Ignored by user
-  window.localStorage.setItem(entry, biggest);
-}
+/*global window, nvl, mConst, iftttMakerInterfaceFire, iftttMakerInterfaceTest */
 
 /*
  * Process ready from the watch
  */
 Pebble.addEventListener("ready", function(e) {
   console.log("ready");
-  var smartStr = window.localStorage.getItem("smart");
-  if (smartStr === null || smartStr === "null") {
-    resetWithPreserve();
-    window.localStorage.setItem("smart", mConst().smartDef);
-    window.localStorage.setItem("fromhr", mConst().fromhrDef);
-    window.localStorage.setItem("frommin", mConst().fromminDef);
-    window.localStorage.setItem("tohr", mConst().tohrDef);
-    window.localStorage.setItem("tomin", mConst().tominDef);
-  }
-  getQuoteOfTheDay();
 });
 
 /*
@@ -136,9 +38,9 @@ function callWatchApp(ctrlVal) {
   function decodeKeyCtrl(ctrlVal, keyVal, name) {
     return (ctrlVal & keyVal) ? name + " " : "";
   }
-  console.log("ACK " + decodeKeyCtrl(ctrlVal, mConst().ctrlTransmitDone, "ctrlTransmitDone") + decodeKeyCtrl(ctrlVal, mConst().ctrlVersionDone, "ctrlVersionDone") + decodeKeyCtrl(ctrlVal, mConst().ctrlGoneOffDone, "ctrlGoneOffDone") + decodeKeyCtrl(ctrlVal, mConst().ctrlDoNext, "ctrlDoNext") + decodeKeyCtrl(ctrlVal, mConst().ctrlSetLastSent, "ctrlSetLastSent")+ decodeKeyCtrl(ctrlVal, mConst().ctrlLazarus, "ctrlLazarus"));
+  console.log("ACK " + decodeKeyCtrl(ctrlVal, mConst().ctrlVersionDone, "ctrlVersionDone") + decodeKeyCtrl(ctrlVal, mConst().ctrlGotRequest, "ctrlGotRequest") + decodeKeyCtrl(ctrlVal, mConst().ctrlRequestOK, "ctrlRequestOK") + decodeKeyCtrl(ctrlVal, mConst().ctrlRequestFail, "ctrlRequestFail"));
   Pebble.sendAppMessage({
-    "keyCtrl" : ctrlVal
+    "ctrl" : ctrlVal
   });
 }
 
@@ -147,153 +49,24 @@ function callWatchApp(ctrlVal) {
  */
 Pebble.addEventListener("appmessage", function(e) {
 
-  // Build a response for the watchapp
-  var ctrlVal = 0;
-
   // Incoming version number
-  if (typeof e.payload.keyVersion !== "undefined") {
-    var version = parseInt(e.payload.keyVersion, 10);
+  if (typeof e.payload.version !== "undefined") {
+    var version = parseInt(e.payload.version, 10);
     console.log("MSG version=" + version);
     window.localStorage.setItem("version", version);
-    ctrlVal = ctrlVal | mConst().ctrlVersionDone;
-    var lazarus = window.localStorage.getItem("lazarus");
-    if (lazarus !== "N") {
-      ctrlVal = ctrlVal | mConst().ctrlLazarus;
-    }
+    callWatchApp(mConst().ctrlVersionDone);
   }
 
-  // Incoming origin timestamp - this is a reset
-  if (typeof e.payload.keyBase !== "undefined") {
-    var base = parseInt(e.payload.keyBase, 10);
-    console.log("MSG base (watch)=" + base);
-    // Watch delivers local time in seconds...
-    var offset = 0;
-    if (isTimeZoneCorrectionRequired()) {
-      offset = new Date().getTimezoneOffset() * 60;
-    }
-    console.log("offset = " + offset);
-    base = (base + offset) * 1000;
-    console.log("MSG base (js)=" + base);
-    resetWithPreserve();
-    window.localStorage.setItem("base", base);
-    ctrlVal = ctrlVal | mConst().ctrlDoNext | mConst().ctrlSetLastSent;
-    addBedTimePin(base);
-    iftttMakerInterfaceBedtime();
-  }
-
-  // Incoming from value (first time for smart alarm)
-  if (typeof e.payload.keyFrom !== "undefined") {
-    var from = parseInt(e.payload.keyFrom, 10);
-    var fromhr = mConst().fromhrDef;
-    var frommin = mConst().fromminDef;
-    var smart = mConst().smartDef;
-    if (from !== -1) {
-      var hours = Math.floor(from / 60);
-      var minutes = from - hours * 60;
-      fromhr = fixLen(String(hours));
-      frommin = fixLen(String(minutes));
-      smart = "Y";
-    }
-    window.localStorage.setItem("fromhr", fromhr);
-    window.localStorage.setItem("frommin", frommin);
-    window.localStorage.setItem("smart", smart);
-    console.log("MSG from=" + from + ", smart=" + smart + ", fromhr=" + fromhr + ", frommin=" + frommin);
-    ctrlVal = ctrlVal | mConst().ctrlDoNext | mConst().ctrlSetLastSent;
-  }
-
-  // Incoming to value (second time for smart alarm)
-  if (typeof e.payload.keyTo !== "undefined") {
-    var to = parseInt(e.payload.keyTo, 10);
-    var tohr = mConst().tohrDef;
-    var tomin = mConst().tominDef;
-    var smart = mConst().smartDef;
-    if (to !== -1) {
-      var hours = Math.floor(to / 60);
-      var minutes = to - hours * 60;
-      tohr = fixLen(String(hours));
-      tomin = fixLen(String(minutes));
-      smart = "Y";
-    }
-    window.localStorage.setItem("tohr", tohr);
-    window.localStorage.setItem("tomin", tomin);
-    window.localStorage.setItem("smart", smart);
-    console.log("MSG to=" + to + ", smart=" + smart + ", tohr=" + tohr + ", tomin=" + tomin);
-    ctrlVal = ctrlVal | mConst().ctrlDoNext | mConst().ctrlSetLastSent;
-  }
-
-  // Incoming gone off value
-  if (typeof e.payload.keyGoneoff !== "undefined") {
-    var goneoffNum = parseInt(e.payload.keyGoneoff, 10);
-    var goneoff = "N";
-    if (goneoffNum !== 0) {
-      var hours = Math.floor(goneoffNum / 60);
-      var minutes = goneoffNum - hours * 60;
-      var hoursStr = fixLen(String(hours));
-      var minutesStr = fixLen(String(minutes));
-      goneoff = hoursStr + minutesStr;
-    }
-    console.log("MSG goneoff=" + goneoff);
-    window.localStorage.setItem("goneOff", goneoff);
-    ctrlVal = ctrlVal | mConst().ctrlGoneOffDone | mConst().ctrlDoNext;
-    addSmartAlarmPin();
-    turnLifxLightsOn();
-    turnHueLightsOn();
-    iftttMakerInterfaceAlarm();
-  }
-
-  // Incoming data point
-  if (typeof e.payload.keyPoint !== "undefined") {
-    var point = parseInt(e.payload.keyPoint, 10);
-    var top = point >> 16;
-    var bottom = point & 0xFFFF;
-    console.log("MSG point=" + top + ", biggest=" + bottom);
-    storePointInfo(top, bottom);
-    ctrlVal = ctrlVal | mConst().ctrlDoNext | mConst().ctrlSetLastSent;
-  }
-
-  // Incoming transmit to automatics
-  if (typeof e.payload.keyTransmit !== "undefined") {
-    console.log("MSG transmit");
-    transmitMethods();
-    ctrlVal = ctrlVal | mConst().ctrlTransmitDone;
-  }
-
-  // Incoming transmit to automatics
-  if (typeof e.payload.keyAutoReset !== "undefined") {
-    var autoReset = parseInt(e.payload.keyAutoReset, 10);
-    console.log("MSG keyAutoReset=" + autoReset);
-    window.localStorage.setItem("autoReset", autoReset);
-    ctrlVal = ctrlVal | mConst().ctrlDoNext | mConst().ctrlSetLastSent;
-  }
-
-  // Respond back to watchapp here - we need assured positive delivery - cannot trust that it has reached the phone - must make
-  // sure it has reached and been processed by the Pebble App and Javascript
-  if (ctrlVal !== 0) {
-    callWatchApp(ctrlVal);
+  // Incoming request
+  if (typeof e.payload.fire !== "undefined") {
+    var fire = parseInt(e.payload.fire, 10);
+    var turnon = parseInt(e.payload.turnon, 10);
+    console.log("MSG fire=" + fire + ", turnon=" + turnon);
+    callWatchApp(mConst().ctrlGotRequest);
+    iftttMakerInterfaceFire(fire, turnon);
   }
 
 });
-
-/*
- * Transmit method list 
- */
-function transmitMethods() {
-  // Protect against double send without resetting
-  var transmitDone = window.localStorage.getItem("transmitDone");
-  if (transmitDone !== null) {
-    console.log("transmit already done");
-    return;
-  }
-
-  // Sends
-  pushoverTransmit();
-  smartwatchProTransmit();
-  iftttMakerInterfaceData();
-
-  // Protect and report time
-  window.localStorage.setItem("transmitDone", "done");
-  window.localStorage.setItem("exptime", new Date().format(mConst().displayDateFmt));
-}
 
 /*
  * Monitor the closing of the config/display screen so as we can do a save if
@@ -301,7 +74,7 @@ function transmitMethods() {
  */
 Pebble.addEventListener("webviewclosed", function(e) {
   console.log("webviewclosed " + e.response);
-  
+
   // Nothing returned
   if (e.response === null || typeof e.response === 'undefined') {
     console.log("no config returned");
@@ -316,100 +89,89 @@ Pebble.addEventListener("webviewclosed", function(e) {
     console.log("no config returned");
     return;
   }
-  
+
   // Process
   if (configData.action === "save") {
-    window.localStorage.setItem("emailto", configData.emailto);
-    window.localStorage.setItem("pouser", configData.pouser);
-    window.localStorage.setItem("potoken", configData.potoken);
-    window.localStorage.setItem("swpdo", configData.swpdo);
-    window.localStorage.setItem("usage", configData.usage);
-    window.localStorage.setItem("lazarus", configData.lazarus);
-    window.localStorage.setItem("lifx-token", configData.lifxtoken);
-    window.localStorage.setItem("lifx-time", configData.lifxtime);
-    window.localStorage.setItem("hueip",  configData.hueip);
-    window.localStorage.setItem("hueusername", configData.hueuser);
-    window.localStorage.setItem("hueid", configData.hueid);
-    window.localStorage.setItem("ifkey", configData.ifkey);
-    
-    // Test if requested
-    if (configData.testsettings === "Y") {
-      console.log("Test settings requested");
-      pushoverTransmit(); 
-      turnLifxLightsOn();
-      turnHueLightsOn();
-      iftttMakerInterfaceAlarm();
-      iftttMakerInterfaceData();
-      iftttMakerInterfaceBedtime();
-    }
+    window.localStorage.setItem("key", configData.key);
+    window.localStorage.setItem("mn1", configData.mn1);
+    window.localStorage.setItem("mn2", configData.mn2);
+    window.localStorage.setItem("mn3", configData.mn3);
+    window.localStorage.setItem("mn4", configData.mn4);
+    window.localStorage.setItem("mn5", configData.mn5);
+    window.localStorage.setItem("mn6", configData.mn6);
+    window.localStorage.setItem("mn7", configData.mn7);
+    window.localStorage.setItem("mn8", configData.mn8);
+    window.localStorage.setItem("mn9", configData.mn9);
+    window.localStorage.setItem("mn10", configData.mn10);
+    window.localStorage.setItem("t1", configData.t1);
+    window.localStorage.setItem("t2", configData.t2);
+    window.localStorage.setItem("t3", configData.t3);
+    window.localStorage.setItem("t4", configData.t4);
+    window.localStorage.setItem("t5", configData.t5);
+    window.localStorage.setItem("t6", configData.t6);
+    window.localStorage.setItem("t7", configData.t7);
+    window.localStorage.setItem("t8", configData.t8);
+    window.localStorage.setItem("t9", configData.t9);
+    window.localStorage.setItem("t10", configData.t10);
+
+    console.log("Test settings requested");
+    iftttMakerInterfaceTest();
+
+    console.log("Tell the watch what it needs to know");
+
+    var toggle = (configData.t1 === "Y" ? 1 : 0) | (configData.t2 === "Y" ? 2 : 0) | (configData.t3 === "Y" ? 4 : 0) | (configData.t4 === "Y" ? 8 : 0) | (configData.t5 === "Y" ? 16 : 0) | (configData.t6 === "Y" ? 32 : 0) | (configData.t7 === "Y" ? 64 : 0) | (configData.t8 === "Y" ? 128 : 0) | (configData.t9 === "Y" ? 256 : 0) | (configData.t10 === "Y" ? 512 : 0);
+
+    Pebble.sendAppMessage({
+      "menuName1" : configData.mn1,
+      "menuName2" : configData.mn2,
+      "menuName3" : configData.mn3,
+      "menuName4" : configData.mn4,
+      "menuName5" : configData.mn5,
+      "menuName6" : configData.mn6,
+      "menuName7" : configData.mn7,
+      "menuName8" : configData.mn8,
+      "menuName9" : configData.mn9,
+      "menuName10" : configData.mn10,
+      "menuToggle" : toggle
+    });
+
   }
 });
 
 /*
  * Build the url for the config and report display @param noset
  */
-function buildUrl(noset) {
+function buildUrl() {
   // If the version is set, keep it, if not the provide a not ready screen
   var version = nvl(window.localStorage.getItem("version"), mConst().versionDef);
   if (parseInt(version, 10) < mConst().lowestVersion) {
     return mConst().urlNotReady;
   }
-  
-  // Gather the chart together
-  var base = window.localStorage.getItem("base");
-  var graph = "";
-  for (var i = 0; i < mConst().limit; i++) {
-    var entry = "P" + i;
-    var valueStr = window.localStorage.getItem(entry);
-    if (valueStr === null) {
-      graph = graph + "-1!";
-    } else {
-      graph = graph + valueStr + "!";
-    }
-  }
 
-  var fromhr = nvl(window.localStorage.getItem("fromhr"), mConst().fromhrDef);
-  var tohr = nvl(window.localStorage.getItem("tohr"), mConst().tohrDef);
-  var frommin = nvl(window.localStorage.getItem("frommin"), mConst().fromminDef);
-  var tomin = nvl(window.localStorage.getItem("tomin"), mConst().tominDef);
-  var smart = nvl(window.localStorage.getItem("smart"), mConst().smartDef);
-  var goneOff = nvl(window.localStorage.getItem("goneOff"), "N");
-  var emailto = nvl(window.localStorage.getItem("emailto"), "");
+  var key = encodeURIComponent(nvl(window.localStorage.getItem("key"), ""));
+  var mn1 = encodeURIComponent(nvl(window.localStorage.getItem("mn1"), ""));
+  var mn2 = encodeURIComponent(nvl(window.localStorage.getItem("mn2"), ""));
+  var mn3 = encodeURIComponent(nvl(window.localStorage.getItem("mn3"), ""));
+  var mn4 = encodeURIComponent(nvl(window.localStorage.getItem("mn4"), ""));
+  var mn5 = encodeURIComponent(nvl(window.localStorage.getItem("mn5"), ""));
+  var mn6 = encodeURIComponent(nvl(window.localStorage.getItem("mn6"), ""));
+  var mn7 = encodeURIComponent(nvl(window.localStorage.getItem("mn7"), ""));
+  var mn8 = encodeURIComponent(nvl(window.localStorage.getItem("mn8"), ""));
+  var mn9 = encodeURIComponent(nvl(window.localStorage.getItem("mn9"), ""));
+  var mn10 = encodeURIComponent(nvl(window.localStorage.getItem("mn10"), ""));
+  var t1 = nvl(window.localStorage.getItem("t1"), "N");
+  var t2 = nvl(window.localStorage.getItem("t2"), "N");
+  var t3 = nvl(window.localStorage.getItem("t3"), "N");
+  var t4 = nvl(window.localStorage.getItem("t4"), "N");
+  var t5 = nvl(window.localStorage.getItem("t5"), "N");
+  var t6 = nvl(window.localStorage.getItem("t6"), "N");
+  var t7 = nvl(window.localStorage.getItem("t7"), "N");
+  var t8 = nvl(window.localStorage.getItem("t8"), "N");
+  var t9 = nvl(window.localStorage.getItem("t9"), "N");
+  var t10 = nvl(window.localStorage.getItem("t10"), "N");
 
-  var extra = "";
-  if (noset === "N") {
-    var pouser = nvl(window.localStorage.getItem("pouser"), "");
-    var postat = nvl(window.localStorage.getItem("postat"), "");
-    var potoken = nvl(window.localStorage.getItem("potoken"), "");
-    var token = Pebble.getAccountToken();
-    var swpdo = nvl(window.localStorage.getItem("swpdo"), "");
-    var swpstat = nvl(window.localStorage.getItem("swpstat"), "");
-    var exptime = nvl(window.localStorage.getItem("exptime"), "");
-    var lifxToken = nvl(window.localStorage.getItem("lifx-token"), "");
-    var lifxTime = nvl(window.localStorage.getItem("lifx-time"), mConst().lifxTimeDef);
-    if (lifxTime === "") {
-      lifxTime = mConst().lifxTimeDef;
-    }
-    var usage = nvl(window.localStorage.getItem("usage"), "Y");
-    var lazarus = nvl(window.localStorage.getItem("lazarus"), "Y");
-    var hueip =  nvl(window.localStorage.getItem("hueip"), "");
-    var hueusername =  nvl(window.localStorage.getItem("hueusername"), "");
-    var hueid = nvl(window.localStorage.getItem("hueid"), "");
-    var ifkey = nvl(window.localStorage.getItem("ifkey"), "");
-    var ifstat = nvl(window.localStorage.getItem("ifstat"), "");
-    extra = "&pouser=" + encodeURIComponent(pouser) + "&postat=" + encodeURIComponent(postat) + 
-           "&potoken=" + encodeURIComponent(potoken) + "&token=" + token + 
-           "&swpdo=" + swpdo + "&swpstat=" + encodeURIComponent(swpstat) + "&exptime=" + encodeURIComponent(exptime) + 
-           "&usage=" + usage + "&lazarus=" + lazarus + "&lifxtoken=" + lifxToken + "&lifxtime=" + lifxTime +
-           "&hueip=" + hueip + "&hueuser=" + encodeURIComponent(hueusername) + "&hueid=" + hueid +
-           "&ifkey=" + ifkey + "&ifstat=" + encodeURIComponent(ifstat);
-  }
-  
-  var url = mConst().url + version + ".html" + 
-           "?base=" + base + "&graph=" + graph + "&fromhr=" + fromhr + "&tohr=" + tohr + "&frommin=" + frommin + "&tomin=" + tomin + 
-           "&smart=" + smart + "&vers=" + version + "&goneoff=" + goneOff + "&emailto=" + encodeURIComponent(emailto) + 
-           "&noset=" + noset + extra;
-  
+  var url = mConst().url + version + ".html?" + "vers=" + version + "&" + "key=" + key + "&" + "mn1=" + mn1 + "&" + "mn2=" + mn2 + "&" + "mn3=" + mn3 + "&" + "mn4=" + mn4 + "&" + "mn5=" + mn5 + "&" + "mn6=" + mn6 + "&" + "mn7=" + mn7 + "&" + "mn8=" + mn8 + "&" + "mn9=" + mn9 + "&" + "mn10=" + mn10 + "&" + "t1=" + t1 + "&" + "t2=" + t2 + "&" + "t3=" + t3 + "&" + "t4=" + t4 + "&" + "t5=" + t5 + "&" + "t6=" + t6 + "&" + "t7=" + t7 + "&" + "t8=" + t8 + "&" + "t9=" + t9 + "&" + "t10=" + t10;
+
   console.log("url=" + url + " (len=" + url.length + ")");
   return url;
 }
@@ -418,11 +180,11 @@ function buildUrl(noset) {
  * Show the config/display page - this will show a graph and allow a reset
  */
 Pebble.addEventListener("showConfiguration", function(e) {
-  Pebble.openURL(buildUrl("N"));
+  Pebble.openURL(buildUrl());
 });
 
 /*
- * Unclear if this serves a purpose at all
+ * Still unclear if this serves a purpose at all
  */
 Pebble.addEventListener("configurationClosed", function(e) {
   console.log("configurationClosed");

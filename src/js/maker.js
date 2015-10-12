@@ -22,122 +22,145 @@
  * THE SOFTWARE.
  */
 
-/*global nvl, window, mLang, makeAjaxCall, mConst, buildUrl, generateCopyLinkData */
-/*exported iftttMakerInterfaceAlarm, iftttMakerInterfaceData, iftttMakerInterfaceBedtime */
+/*global nvl, window, mConst,  clearTimeout, callWatchApp */
+/*exported iftttMakerInterfaceFire, iftttMakerInterfaceTest */
 
 /*
- * Call the ifttt maker interface when the alarm sounds
+ * Do an action
  */
-function iftttMakerInterfaceAlarm() {
+function iftttMakerInterfaceFire(num, turnon) {
 
   try {
-  
+
     // Find out config information
-    var ifkey =  nvl(window.localStorage.getItem("ifkey"), "");
-  
+    var key = nvl(window.localStorage.getItem("key"), "");
+
     // Escape if not configured
-    if (ifkey === "") {
-      console.log("ifttt maker deactivated");
-      window.localStorage.setItem("ifstat", mLang().disabled);
+    if (key === "") {
+      callWatchApp(mConst().ctrlRequestFail);
       return;
     }
-  
-    var payload = { "value1" : "", "value2" : "", "value3" : "" };
 
-    var url = mConst().makerAlarmUrl + ifkey;
-    
-    console.log("iftttMakerInterfaceAlarm: url=" + url);
-    window.localStorage.setItem("ifstat", mLang().sending);
-    makeAjaxCall("POST", url, mConst().timeout, JSON.stringify(payload), function(resp) {
-      console.log("iftttMakerInterfaceAlarm: " + JSON.stringify(resp));
-      if (resp.status !== 1) {
-        window.localStorage.setItem("ifstat", JSON.stringify(resp.errors));
+    var eventName = "";
+    var toggle = "N";
+    switch (num) {
+      case 1:
+        eventName = nvl(window.localStorage.getItem("mn1"), "");
+        toggle = nvl(window.localStorage.getItem("t1"), "N");
+        break;
+      case 2:
+        eventName = nvl(window.localStorage.getItem("mn2"), "");
+        toggle = nvl(window.localStorage.getItem("t2"), "N");
+        break;
+      case 3:
+        eventName = nvl(window.localStorage.getItem("mn3"), "");
+        toggle = nvl(window.localStorage.getItem("t3"), "N");
+        break;
+      case 4:
+        eventName = nvl(window.localStorage.getItem("mn4"), "");
+        toggle = nvl(window.localStorage.getItem("t4"), "N");
+        break;
+      case 5:
+        eventName = nvl(window.localStorage.getItem("mn5"), "");
+        toggle = nvl(window.localStorage.getItem("t5"), "N");
+        break;
+      case 6:
+        eventName = nvl(window.localStorage.getItem("mn6"), "");
+        toggle = nvl(window.localStorage.getItem("t6"), "N");
+        break;
+      case 7:
+        eventName = nvl(window.localStorage.getItem("mn7"), "");
+        toggle = nvl(window.localStorage.getItem("t7"), "N");
+        break;
+      case 8:
+        eventName = nvl(window.localStorage.getItem("mn8"), "");
+        toggle = nvl(window.localStorage.getItem("t8"), "N");
+        break;
+      case 9:
+        eventName = nvl(window.localStorage.getItem("mn9"), "");
+        toggle = nvl(window.localStorage.getItem("t9"), "N");
+        break;
+      case 10:
+        eventName = nvl(window.localStorage.getItem("mn10"), "");
+        toggle = nvl(window.localStorage.getItem("t10"), "N");
+        break;
+    }
+
+    // menu name becomes event name, by lowercasing and replacing space with _
+    // This saves the user having to put in and see two very similar strings
+    eventName = eventName.toLowerCase().replace(/ /g, "_");
+
+    // If this is a toggle then we suffix with _on or _off depending on which we
+    // are doing
+    if (toggle === "Y") {
+      if (turnon === 1) {
+        eventName += "_on";
       } else {
-        window.localStorage.setItem("ifstat", mLang().ok);
-      }     
+        eventName += "_off";
+      }
+    }
+
+    // Can't see a use for a payload
+    var payload = {
+      "value1" : "",
+      "value2" : "",
+      "value3" : ""
+    };
+
+    // Blast with an event
+    var url = mConst().makerPrefix + eventName + mConst().makerSuffix + key;
+
+    console.log("iftttMakerInterfaceFire: url=" + url);
+    makeAjaxCall("POST", url, mConst().timeout, JSON.stringify(payload), function(resp) {
+      console.log("iftttMakerInterfaceFire: " + JSON.stringify(resp));
+      if (resp.status !== 1) {
+        callWatchApp(mConst().ctrlRequestFail);
+      } else {
+        callWatchApp(mConst().ctrlRequestOK);
+      }
     });
-    
+
   } catch (err) {
-    window.localStorage.setItem("ifstat", err.message);
+    callWatchApp(mConst().ctrlRequestFail);
   }
 }
 
 /*
  * Call the ifttt maker interface when the data export needs to be done
  */
-function iftttMakerInterfaceData() {
+function iftttMakerInterfaceTest() {
 
   try {
-  
+
     // Find out config information
-    var ifkey =  nvl(window.localStorage.getItem("ifkey"), "");
-  
+    var key = nvl(window.localStorage.getItem("key"), "");
+
     // Escape if not configured
-    if (ifkey === "") {
+    if (key === "") {
       console.log("ifttt maker deactivated");
-      window.localStorage.setItem("ifstat", mLang().disabled);
       return;
     }
-    
-    var base = window.localStorage.getItem("base");
-    var resetDate = new Date(parseInt(base, 10)).format(mConst().displayDateFmt);
-    var urlToAttach = buildUrl("Y");
-    var csvData = generateCopyLinkData();
-  
-    var payload = { "value1" : resetDate, "value2" : urlToAttach, "value3" : csvData };
-  
-    var url = mConst().makerDataUrl + ifkey;
-    
-    console.log("iftttMakerInterfaceData: url=" + url);
-    window.localStorage.setItem("ifstat", mLang().sending);
+
+    var payload = {
+      "value1" : "",
+      "value2" : "",
+      "value3" : ""
+    };
+
+    var url = mConst().makerPrefix + "alvin_test" + mConst().makerSuffix + key;
+
+    console.log("iftttMakerInterfaceTest: url=" + url);
     makeAjaxCall("POST", url, mConst().timeout, JSON.stringify(payload), function(resp) {
-      console.log("iftttMakerInterfaceData: " + JSON.stringify(resp));
+      console.log("iftttMakerInterfaceTest: " + JSON.stringify(resp));
       if (resp.status !== 1) {
-        window.localStorage.setItem("ifstat", JSON.stringify(resp.errors));
+        console.log("iftttMakerInterfaceTest: " + JSON.stringify(resp.errors));
       } else {
-        window.localStorage.setItem("ifstat", mLang().ok);
-      }     
+        console.log("iftttMakerInterfaceTest:  OK");
+      }
     });
-    
+
   } catch (err) {
-    window.localStorage.setItem("ifstat", err.message);
-  }
-}
-
-/*
- * Call the ifttt maker interface when the bedtime is activated
- */
-function iftttMakerInterfaceBedtime() {
-
-  try {
-  
-    // Find out config information
-    var ifkey =  nvl(window.localStorage.getItem("ifkey"), "");
-  
-    // Escape if not configured
-    if (ifkey === "") {
-      console.log("ifttt maker deactivated");
-      window.localStorage.setItem("ifstat", mLang().disabled);
-      return;
-    }
-  
-    var payload = { "value1" : "", "value2" : "", "value3" : "" };
-
-    var url = mConst().makerBedtimeUrl + ifkey;
-    
-    console.log("iftttMakerInterfaceBedtime: url=" + url);
-    window.localStorage.setItem("ifstat", mLang().sending);
-    makeAjaxCall("POST", url, mConst().timeout, JSON.stringify(payload), function(resp) {
-      console.log("iftttMakerInterfaceBedtime: " + JSON.stringify(resp));
-      if (resp.status !== 1) {
-        window.localStorage.setItem("ifstat", JSON.stringify(resp.errors));
-      } else {
-        window.localStorage.setItem("ifstat", mLang().ok);
-      }     
-    });
-    
-  } catch (err) {
-    window.localStorage.setItem("ifstat", err.message);
+    console.log("iftttMakerInterfaceTest: " + err.message);
   }
 }
 
@@ -180,7 +203,7 @@ function makeAjaxCall(mode, url, toTime, dataout, resp) {
   if (dataout === "") {
     req.send();
   } else {
-	req.send(dataout);
+    req.send(dataout);
   }
 
 }
@@ -195,4 +218,3 @@ function safeJSONparse(txt) {
     return txt;
   }
 }
-

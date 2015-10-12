@@ -22,61 +22,25 @@
  * THE SOFTWARE.
  */
 
-/*exported mConst, mLang */
+/*exported mConst */
 
 /*
  * Constants
  */
 function mConst() {
-  var urlPrefix = "http://ui.morpheuz.net/morpheuz/";
+  var urlPrefix = "http://ui.morpheuz.net/alvin/";
   return {
     limit : 60,
     divisor : 600000,
-    url : urlPrefix + "view-",
+    url : urlPrefix + "config-",
     versionDef : "0",
-    lowestVersion : 22,
-    smartDef : "N",
-    fromhrDef : "6",
-    fromminDef : "30",
-    tohrDef : "7",
-    tominDef : "15",
-    pushoverAPI : "https://api.pushover.net/1/messages.json",
-    smartwatchProAPI : "http://2hk.smartwatch.pro/?source=Morpheuz&starts=",
-    sampleIntervalMins : 10,
-    awakeAbove : 1000,
-    ctrlTransmitDone : 1,
-    ctrlVersionDone : 2,
-    ctrlGoneOffDone : 4,
-    ctrlDoNext : 8,
-    ctrlSetLastSent : 16,
-    ctrlLazarus : 32,
-    displayDateFmt : "WWW, NNN dd, yyyy hh:mm",
-    swpUrlDate : "yyyy-MM-ddThh:mm:00",
+    ctrlVersionDone : 1,
+    ctrlGotRequest : 2,
+    ctrlRequestOK : 4,
+    ctrlRequestFail : 8,
     timeout : 4000,
-    usageUrl : urlPrefix + "usage/",
-    usageSx : ".html",
-    quotesUrl : urlPrefix + "quotes.json",
-    hueTimeout: 3000,
-    urlNotReady: urlPrefix + "view-not-ready.html",
-    makerAlarmUrl: "https://maker.ifttt.com/trigger/morpheuz_alarm/with/key/",
-    makerDataUrl: "https://maker.ifttt.com/trigger/morpheuz_data/with/key/",
-    makerBedtimeUrl: "https://maker.ifttt.com/trigger/morpheuz_bedtime/with/key/",
-    lifxTimeDef: 60
-  };
-}
-
-function mLang() {
-  return {
-    ok : "OK",
-    sending : "Sending",
-    disabled : "Disabled",
-    cnc : "Could not calculate",
-    sa : "Smart Alarm",
-    startM : "Start Morpheuz",
-    bedTime : "Bed time",
-    bedNow : "Bed Now",
-    cancelBed : "Cancel bed time",
-    earliest: "Earliest: ",
-    latest: "Latest: "
+    urlNotReady : urlPrefix + "config-not-ready.html",
+    makerPrefix : "https://maker.ifttt.com/trigger/",
+    makerSuffix : "/with/key/"
   };
 }

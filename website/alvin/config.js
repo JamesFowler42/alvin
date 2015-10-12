@@ -65,6 +65,10 @@ $("document").ready(function() {
   var toggle8 = getParameterByName("t8");
   var toggle9 = getParameterByName("t9");
   var toggle10 = getParameterByName("t10");
+  var returnTo = getParameterByName("return_to");
+  if (returnTo === "") {
+    returnTo = "pebblejs://close#";
+  }
 
   // Set screen fields
   $("#key").val(key);
@@ -225,7 +229,7 @@ $("document").ready(function() {
         move = true;
       }
     }
-    document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(configData));
+    document.location = returnTo + encodeURIComponent(JSON.stringify(configData));
   });
 
 });

@@ -1,6 +1,7 @@
 {
     "appKeys": {
         "ctrl": 13,
+        "fire": 14,
         "menuName1": 1,
         "menuName10": 10,
         "menuName2": 2,
@@ -12,6 +13,7 @@
         "menuName8": 8,
         "menuName9": 9,
         "menuToggle": 11,
+        "turnon": 15,
         "version": 12
     },
     "capabilities": [

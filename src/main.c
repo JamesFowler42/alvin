@@ -27,7 +27,6 @@
 
 static ConfigData config_data;
 static bool save_config_requested = false;
-
 static bool version_sent = false;
 
 /*
@@ -50,7 +49,31 @@ static void send_to_phone(const uint32_t key, int32_t tophone) {
 
   app_message_outbox_send();
 
-  last_request = time(NULL);
+}
+
+/*
+ * Menu item fired
+ */
+EXTFN void menu_item_fired(int32_t menu_item) {
+
+  int32_t turnon = config_data.entry[menu_item].on ? 1 : 0;
+
+  Tuplet tuplet1 = TupletInteger(KEY_FIRE, menu_item);
+  Tuplet tuplet2 = TupletInteger(KEY_TURNON, turnon);
+
+  DictionaryIterator *iter;
+  app_message_outbox_begin(&iter);
+
+  if (iter == NULL) {
+    LOG_WARN("no outbox");
+    return;
+  }
+
+  dict_write_tuplet(iter, &tuplet1);
+  dict_write_tuplet(iter, &tuplet2);
+  dict_write_end(iter);
+
+  app_message_outbox_send();
 
 }
 
@@ -62,53 +85,93 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
   // Got a ctrl message
   Tuple *ctrl_tuple = dict_find(iter, KEY_CTRL);
   if (ctrl_tuple) {
-    
-    int32_t ctrl_value = ctrl_tuple->value->int32;
 
-    // If transmit is done then mark it
-    if (ctrl_value & CTRL_TRANSMIT_DONE) {
-      internal_data.transmit_sent = true;
-      set_icon(true, IS_EXPORT);
-      // If we're waiting for previous nights data to be sent, it now has been, reset and go
-      if (complete_outstanding) {
-        app_timer_register(COMPLETE_OUTSTANDING_MS, reset_sleep_period_action, NULL);
-      }
-      // If Morpheuz has woken to send data, then once the data is sent, speed up the shutdown
-      // Normally around for 5 minutes but no need for that once data has been sent
-      if (auto_shutdown_timer != NULL) {
-        app_timer_reschedule(auto_shutdown_timer, TEN_SECONDS_MS);
-      }
-    }
+    int32_t ctrl_value = ctrl_tuple->value->int32;
 
     // If version is done then mark it
     if (ctrl_value & CTRL_VERSION_DONE) {
       version_sent = true;
-      config_data.lazarus = ctrl_value & CTRL_LAZARUS;
-      trigger_config_save();
     }
 
-    // If gone off is done then mark that
-    if (ctrl_value & CTRL_GONEOFF_DONE) {
-      internal_data.gone_off_sent = true;
+    if (ctrl_value & CTRL_GOT_REQUEST) {
+      set_sending();
     }
 
-    // Only let the last sent become it's new value after confirmation
-    // from the JS
-    if (ctrl_value & CTRL_SET_LAST_SENT) {
-      LOG_DEBUG("in_received_handler - CTRL_SET_LAST_SENT to %d", new_last_sent);
-      internal_data.last_sent = new_last_sent;
+    if (ctrl_value & CTRL_REQUEST_OK) {
+      set_success();
     }
 
-    // If the request is to continue then do so.
-    if (ctrl_value & CTRL_DO_NEXT) {
-      app_timer_register(SHORT_RETRY_MS, transmit_next_data, NULL);
+    if (ctrl_value & CTRL_REQUEST_FAIL) {
+      set_failed();
+    }
+  }
+
+  // Got a menu name
+  Tuple *mn = dict_find(iter, KEY_MENU_NAME_1);
+  if (mn) {
+    strncpy(config_data.entry[0].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+  }
+  mn = dict_find(iter, KEY_MENU_NAME_2);
+  if (mn) {
+    strncpy(config_data.entry[1].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+  }
+  mn = dict_find(iter, KEY_MENU_NAME_3);
+  if (mn) {
+    strncpy(config_data.entry[2].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+  }
+  mn = dict_find(iter, KEY_MENU_NAME_4);
+  if (mn) {
+    strncpy(config_data.entry[3].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+  }
+  mn = dict_find(iter, KEY_MENU_NAME_5);
+  if (mn) {
+    strncpy(config_data.entry[4].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+  }
+  mn = dict_find(iter, KEY_MENU_NAME_6);
+  if (mn) {
+    strncpy(config_data.entry[5].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+  }
+  mn = dict_find(iter, KEY_MENU_NAME_7);
+  if (mn) {
+    strncpy(config_data.entry[6].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+  }
+  mn = dict_find(iter, KEY_MENU_NAME_8);
+  if (mn) {
+    strncpy(config_data.entry[7].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+  }
+  mn = dict_find(iter, KEY_MENU_NAME_9);
+  if (mn) {
+    strncpy(config_data.entry[8].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+  }
+  mn = dict_find(iter, KEY_MENU_NAME_10);
+  if (mn) {
+    strncpy(config_data.entry[9].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+  }
+
+  // Which menu entries are toggles
+  Tuple *tog_tuple = dict_find(iter, KEY_MENU_TOGGLE);
+  if (tog_tuple) {
+
+    int32_t tog_value = tog_tuple->value->int32;
+    config_data.entry[0].toggle = (tog_value & 1) == 1;
+    config_data.entry[1].toggle = (tog_value & 2) == 2;
+    config_data.entry[2].toggle = (tog_value & 4) == 4;
+    config_data.entry[3].toggle = (tog_value & 8) == 8;
+    config_data.entry[4].toggle = (tog_value & 16) == 16;
+    config_data.entry[5].toggle = (tog_value & 32) == 32;
+    config_data.entry[6].toggle = (tog_value & 64) == 64;
+    config_data.entry[7].toggle = (tog_value & 128) == 128;
+    config_data.entry[8].toggle = (tog_value & 256) == 256;
+    config_data.entry[9].toggle = (tog_value & 512) == 512;
+    for (int8_t i = 0; i < MAX_MENU_ENTRY; i++) {
+      config_data.entry[i].on = false;
     }
 
-    // Yes - must have comms
-    set_icon(true, IS_COMMS);
-    last_response = time(NULL);
+    config_data.active = config_data.entry[0].menu_text[0] != '\0';
+    trigger_config_save();
+    redraw_menu();
+  }
 
-  } 
 }
 
 /*
@@ -116,12 +179,12 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
  */
 static void send_version(void *data) {
   if (!version_sent) {
-     if (bluetooth_connection_service_peek()) {
-       app_timer_register(VERSION_SEND_INTERVAL_MS, send_version, NULL);
-       send_to_phone(KEY_VERSION, VERSION);
-     } else {
-       app_timer_register(VERSION_SEND_SLOW_INTERVAL_MS, send_version, NULL);
-     }
+    if (bluetooth_connection_service_peek()) {
+      app_timer_register(VERSION_SEND_INTERVAL_MS, send_version, NULL);
+      send_to_phone(KEY_VERSION, VERSION);
+    } else {
+      app_timer_register(VERSION_SEND_SLOW_INTERVAL_MS, send_version, NULL);
+    }
   }
 
 }
@@ -131,20 +194,20 @@ static void send_version(void *data) {
  */
 EXTFN void open_comms() {
 
-  LOG_DEBUG("internal_data %d, config_data %d", sizeof(internal_data), sizeof(config_data));
-
   // Register message handlers
   app_message_register_inbox_received(in_received_handler);
 
   // Incoming size
-  Tuplet in_values[] = { TupletInteger(KEY_CTRL, 0) };
+  Tuplet out_values[] = { TupletInteger(KEY_FIRE, 0), TupletInteger(KEY_TURNON, 0) };
+  Tuplet in_values[] = { TupletCString(KEY_MENU_NAME_1, FULL_STRING), TupletCString(KEY_MENU_NAME_2, FULL_STRING), TupletCString(KEY_MENU_NAME_3, FULL_STRING), TupletCString(KEY_MENU_NAME_4, FULL_STRING), TupletCString(KEY_MENU_NAME_5, FULL_STRING), TupletCString(KEY_MENU_NAME_6, FULL_STRING), TupletCString(KEY_MENU_NAME_7, FULL_STRING), TupletCString(KEY_MENU_NAME_8, FULL_STRING), TupletCString(KEY_MENU_NAME_9, FULL_STRING), TupletCString(KEY_MENU_NAME_10, FULL_STRING), TupletInteger(KEY_MENU_TOGGLE, 0) };
 
+  uint32_t outbound_size = dict_calc_buffer_size_from_tuplets(out_values, ARRAY_LENGTH(out_values)) + FUDGE;
   uint32_t inbound_size = dict_calc_buffer_size_from_tuplets(in_values, ARRAY_LENGTH(in_values)) + FUDGE;
 
-  LOG_DEBUG("I(%ld) O(%ld)", inbound_size, inbound_size);
+  LOG_DEBUG("I(%ld) O(%ld)", inbound_size, outbound_size);
 
   // Open buffers
-  app_message_open(inbound_size, inbound_size);
+  app_message_open(inbound_size, outbound_size);
 
   // Tell JS our version and keep trying until a reply happens
   app_timer_register(VERSION_SEND_INTERVAL_MS, send_version, NULL);
@@ -167,14 +230,9 @@ EXTFN void save_config_data(void *data) {
  */
 static void clear_config_data() {
   memset(&config_data, 0, sizeof(config_data));
-  config_data.fromhr = FROM_HR_DEF;
-  config_data.frommin = FROM_MIN_DEF;
-  config_data.tohr = TO_HR_DEF;
-  config_data.tomin = TO_MIN_DEF;
-  config_data.from = to_mins(FROM_HR_DEF,FROM_MIN_DEF);
-  config_data.to = to_mins(TO_HR_DEF,TO_MIN_DEF);
-  config_data.lazarus = true;
   config_data.config_ver = CONFIG_VER;
+  strncpy(config_data.entry[0].menu_text, NO_CONFIG_1, MENU_TEXT_LEN);
+  strncpy(config_data.entry[1].menu_text, NO_CONFIG_2, MENU_TEXT_LEN);
 }
 
 /*
@@ -209,34 +267,40 @@ EXTFN void trigger_config_save() {
  */
 static void handle_init() {
   // Check which defines are defined
-  #ifdef PBL_SDK_2
+#ifdef PBL_SDK_2
   LOG_INFO("PBL_SDK_2");
-  #endif
-  #ifdef PBL_SDK_3
+#endif
+#ifdef PBL_SDK_3
   LOG_INFO("PBL_SDK_3");
-  #endif
-  #ifdef PBL_PLATFORM_APLITE
+#endif
+#ifdef PBL_PLATFORM_APLITE
   LOG_INFO("PBL_PLATFORM_APLITE");
-  #endif
-  #ifdef PBL_PLATFORM_BASALT
+#endif
+#ifdef PBL_PLATFORM_BASALT
   LOG_INFO("PBL_PLATFORM_BASALT");
-  #endif
-  #ifdef PBL_PLATFORM_CHALK
+#endif
+#ifdef PBL_PLATFORM_CHALK
   LOG_INFO("PBL_PLATFORM_CHALK");
-  #endif
-  #ifdef PBL_COLOR
+#endif
+#ifdef PBL_COLOR
   LOG_INFO("PBL_COLOR");
-  #endif
-  #ifdef PBL_BW
+#endif
+#ifdef PBL_BW
   LOG_INFO("PBL_BW");
-  #endif
-  #ifdef PBL_ROUND
+#endif
+#ifdef PBL_ROUND
   LOG_INFO("PBL_ROUND");
-  #endif
-  #ifdef PBL_RECT
+#endif
+#ifdef PBL_RECT
   LOG_INFO("PBL_RECT");
-  #endif
-    
+#endif
+
+  read_config_data();
+
+  show_menu();
+
+  open_comms();
+
 }
 
 /*
@@ -246,6 +310,4 @@ EXTFN int main(void) {
   handle_init();
   app_event_loop();
 }
-
-
 
