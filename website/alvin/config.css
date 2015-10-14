@@ -29,6 +29,8 @@ body {
     font-size: 12px;
     font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
     margin: 1px;
+    background-color: #333;
+    color: white;
 }
 
 .outer {
@@ -45,6 +47,7 @@ h2 {
     margin-top: 0px;
     font-size: 141%;
     margin-bottom: 0px;
+    text-transform: uppercase;
 }
 
 h2 img {
@@ -111,10 +114,12 @@ p.buttons {
     padding-left: 27px;
     padding-bottom: 5px;
     padding-top: 3px;
-    border: #ccc solid 1px;
+    border: #FF4700 solid 1px;
     border-radius: 5px;
     cursor: pointer;
-    background-color: white;
+    background-color: #FF4700;
+    text-transform: uppercase;
+    color: white;
 }
 
 .menuitems {
@@ -136,7 +141,7 @@ p.buttons {
 }
 
 .tralt {
-    background-color: #dddddd;
+    background-color: rgba(128,128,128,0.2);
 }
 
 .namefield {
@@ -167,21 +172,21 @@ p.buttons {
 }
 
 a {
-    text-decoration: none;
+    text-decoration: underscore;
+    color: white;
 }
 
-
-
-.exporthead {
-    background-color: #eee;
+.keyhead {
+    background-color: #3D3D3D;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     margin-left: 2px;
     padding-top: 5px;
+    text-transform: uppercase;
 }
 
-.exportwrap {
-    background-color: #eee;
+.keywrap {
+    background-color: #3D3D3D;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
     padding-top: 2px;
@@ -191,20 +196,64 @@ a {
     margin-left: 2px;
 }
 
-.quality-head {
-    border-top-right-radius: 5px;
+.controlhead {
+    background-color: #3D3D3D;
     border-top-left-radius: 5px;
-    color: white;
-    background-color: #FF7D48;
+    border-top-right-radius: 5px;
+    margin-left: 2px;
     padding-top: 5px;
+    text-transform: uppercase;
 }
 
-.movement-head {
-    border-top-right-radius: 5px;
+.controlwrap {
+    background-color: #3D3D3D;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-top: 0px;
+    margin-bottom: 2px;
+    margin-left: 2px;
+}
+
+.helphead {
+    background-color: #3D3D3D;
     border-top-left-radius: 5px;
-    color: white;
-    background-color: #2066C7;
+    border-top-right-radius: 5px;
+    margin-left: 2px;
     padding-top: 5px;
+    text-transform: uppercase;
+}
+
+.helpwrap {
+    background-color: #3D3D3D;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-top: 0px;
+    margin-bottom: 2px;
+    margin-left: 2px;
+}
+
+.alsohead {
+    background-color: #3D3D3D;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    margin-left: 2px;
+    padding-top: 5px;
+    text-transform: uppercase;
+}
+
+.alsowrap {
+    background-color: #3D3D3D;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-top: 0px;
+    margin-bottom: 2px;
+    margin-left: 2px;
 }
 
 .centre {
@@ -235,5 +284,7 @@ a {
 .indent {
     padding-left: 5px;
 }
+
+
 
 

@@ -25,13 +25,18 @@
     "resources": {
         "media": [
             {
-                "file": "images/menu_yes.png",
-                "name": "IMAGE_MENU_YES",
+                "file": "images/menu_no.png",
+                "name": "IMAGE_MENU_NO",
                 "type": "png"
             },
             {
-                "file": "images/menu_no.png",
-                "name": "IMAGE_MENU_NO",
+                "file": "images/flourish.png",
+                "name": "IMAGE_FLOURISH",
+                "type": "png"
+            },
+            {
+                "file": "images/menu_yes.png",
+                "name": "IMAGE_MENU_YES",
                 "type": "png"
             }
         ]

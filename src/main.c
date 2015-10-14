@@ -28,6 +28,7 @@
 static ConfigData config_data;
 static bool save_config_requested = false;
 static bool version_sent = false;
+static AppTimer *redraw_timer = NULL;
 
 /*
  * Send a message to javascript
@@ -52,11 +53,31 @@ static void send_to_phone(const uint32_t key, int32_t tophone) {
 }
 
 /*
+ * Update the menu, save the config etc.
+ */
+static void update_redraw(void *data) {
+  redraw_timer = NULL;
+  trigger_config_save();
+  reload_menu();
+}
+
+/*
+ * Queue a menu re-draw after all the incoming messages reconfiguring menu have been processed
+ */
+static void request_update_redraw() {
+  if (redraw_timer == NULL) {
+    redraw_timer = app_timer_register(MENU_REDRAW_TIME_MS, update_redraw, NULL);
+  } else {
+    app_timer_reschedule(redraw_timer, MENU_REDRAW_TIME_MS);
+  }
+}
+
+/*
  * Menu item fired
  */
 EXTFN void menu_item_fired(int32_t menu_item) {
 
-  int32_t turnon = config_data.entry[menu_item].on ? 1 : 0;
+  int32_t turnon = config_data.entry[menu_item].on ? 0 : 1; // Menu item not set yet, so previous value used
 
   Tuplet tuplet1 = TupletInteger(KEY_FIRE, menu_item);
   Tuplet tuplet2 = TupletInteger(KEY_TURNON, turnon);
@@ -90,18 +111,22 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 
     // If version is done then mark it
     if (ctrl_value & CTRL_VERSION_DONE) {
+      LOG_DEBUG("CTRL_VERSION_DONE");
       version_sent = true;
     }
 
     if (ctrl_value & CTRL_GOT_REQUEST) {
-      set_sending();
+      LOG_DEBUG("CTRL_GOT_REQUEST");
+      set_sent();
     }
 
     if (ctrl_value & CTRL_REQUEST_OK) {
+      LOG_DEBUG("CTRL_REQUEST_OK");
       set_success();
     }
 
     if (ctrl_value & CTRL_REQUEST_FAIL) {
+      LOG_DEBUG("CTRL_REQUEST_FAIL");
       set_failed();
     }
   }
@@ -110,42 +135,52 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
   Tuple *mn = dict_find(iter, KEY_MENU_NAME_1);
   if (mn) {
     strncpy(config_data.entry[0].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+    request_update_redraw();
   }
   mn = dict_find(iter, KEY_MENU_NAME_2);
   if (mn) {
     strncpy(config_data.entry[1].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+    request_update_redraw();
   }
   mn = dict_find(iter, KEY_MENU_NAME_3);
   if (mn) {
     strncpy(config_data.entry[2].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+    request_update_redraw();
   }
   mn = dict_find(iter, KEY_MENU_NAME_4);
   if (mn) {
     strncpy(config_data.entry[3].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+    request_update_redraw();
   }
   mn = dict_find(iter, KEY_MENU_NAME_5);
   if (mn) {
     strncpy(config_data.entry[4].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+    request_update_redraw();
   }
   mn = dict_find(iter, KEY_MENU_NAME_6);
   if (mn) {
     strncpy(config_data.entry[5].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+    request_update_redraw();
   }
   mn = dict_find(iter, KEY_MENU_NAME_7);
   if (mn) {
     strncpy(config_data.entry[6].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+    request_update_redraw();
   }
   mn = dict_find(iter, KEY_MENU_NAME_8);
   if (mn) {
     strncpy(config_data.entry[7].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+    request_update_redraw();
   }
   mn = dict_find(iter, KEY_MENU_NAME_9);
   if (mn) {
     strncpy(config_data.entry[8].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+    request_update_redraw();
   }
   mn = dict_find(iter, KEY_MENU_NAME_10);
   if (mn) {
     strncpy(config_data.entry[9].menu_text, mn->value->cstring, MENU_TEXT_LEN);
+    request_update_redraw();
   }
 
   // Which menu entries are toggles
@@ -168,8 +203,8 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
     }
 
     config_data.active = config_data.entry[0].menu_text[0] != '\0';
-    trigger_config_save();
-    redraw_menu();
+    request_update_redraw();
+
   }
 
 }

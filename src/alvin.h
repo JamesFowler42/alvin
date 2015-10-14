@@ -58,6 +58,8 @@
 #define POST_MENU_ACTION_DISPLAY_UPDATE_MS 900
 #define MENU_ACTION_MS 750
 #define MENU_ACTION_HIDE_MS 500
+#define MENU_STATE_TIME_MS 1500
+#define MENU_REDRAW_TIME_MS 2000
 
 #ifdef PBL_COLOR 
 #define BACKGROUND_COLOR GColorDukeBlue
@@ -69,11 +71,11 @@
 #define MENU_FAILED_COLOR GColorRed
 #define MENU_SUCCESS_COLOR GColorGreen
 #else
-#define BACKGROUND_COLOR GColorBlack
+#define BACKGROUND_COLOR GColorWhite
 #define MENU_HEAD_COLOR GColorBlack
-#define MENU_SENDING_COLOR GColorWhite
-#define MENU_FAILED_COLOR GColorWhite
-#define MENU_SUCCESS_COLOR GColorWhite
+#define MENU_SENDING_COLOR GColorBlack
+#define MENU_FAILED_COLOR GColorBlack
+#define MENU_SUCCESS_COLOR GColorBlack
 #endif
 
 // These save space and time to run and a direct cast is claimed to be supported in the documentation
@@ -114,14 +116,14 @@ enum CtrlValues {
 #define VERSION_SEND_INTERVAL_MS (1000)
 #define VERSION_SEND_SLOW_INTERVAL_MS (60*1000)
 
-#define ALVIN "Alvin"
 #define NO_CONFIG_1 "Configure on your"
 #define NO_CONFIG_2 "Phone"
 #define NO_BLUETOOTH "No bluetooth"
-#define SENDING "Sending..."
-#define FAILED "FAILED!"
-#define SUCCESS "Done"
-
+#define TEXT_SENDING "Sending..."
+#define TEXT_FAILED "FAILED!"
+#define TEXT_SENT "Sent"
+#define TEXT_SUCCESS "Done"
+  
 #define MENU_TEXT_LEN 20
 #define MAX_MENU_ENTRY 10
 
@@ -144,11 +146,11 @@ void trigger_config_save();
 void show_menu();
 ConfigData *get_config_data();
 void menu_item_fired(int32_t menu_item);
-void redraw_menu();
+void reload_menu();
 void save_config_data(void *data);
 void set_failed();
 void set_success();
-void set_sending();
+void set_sent();
 
 #endif /* ALVIN_H_ */
 

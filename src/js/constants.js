@@ -34,6 +34,7 @@ function mConst() {
     divisor : 600000,
     url : urlPrefix + "config-",
     versionDef : "0",
+    lowestVersion : 0,
     ctrlVersionDone : 1,
     ctrlGotRequest : 2,
     ctrlRequestOK : 4,

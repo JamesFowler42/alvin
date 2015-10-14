@@ -98,6 +98,11 @@ $("document").ready(function() {
 
   // Show version warning
   setScreenMessageBasedOnVersion(vers);
+  
+  // Sometimes we ask for love or donations
+  if ((new Date().valueOf()) % 10 === 0) {
+    $("#info-message").css("display", "block");
+  }
 
   // Move down
   $(".downicon").click(function() {

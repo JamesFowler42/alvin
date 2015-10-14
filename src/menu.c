@@ -28,24 +28,39 @@
 // Constants
 #define NUM_MENU_SECTIONS 1
 #define NUM_MENU_ICONS 2
+#define FLOURISH_LEFT ((width - 144) / 2)
 
+#define STATE_NORMAL 0
+#define STATE_SENDING 1
+#define STATE_SENT 2
+#define STATE_FAILED 3
+#define STATE_SUCCESS 4
+  
 // Private
 static Window *window;
 static MenuLayer *menu_layer = NULL;
 static GBitmap *menu_icons[NUM_MENU_ICONS];
-static bool menu_act = false;
 static bool connected;
 static int16_t selected_row;
 static int16_t centre;
 static int16_t width;
-static bool sending = false;
+static uint8_t state = STATE_NORMAL;
 static bool failed = false;
 static bool success = false;
+static GBitmap *flourish;
+static AppTimer *restore_timer = NULL;
+
+/*
+ * Reload menu
+ */
+EXTFN void reload_menu() {
+  menu_layer_reload_data(menu_layer);
+}
 
 /*
  * Force the menu to redraw
  */
-EXTFN void redraw_menu() {
+static void redraw_menu() {
   layer_mark_dirty(menu_layer_get_layer_jf(menu_layer));
 }
 
@@ -53,9 +68,8 @@ EXTFN void redraw_menu() {
  * Restore the menu item after sending
  */
 static void restore_menu(void *data) {
-  sending = false;
-  failed = false;
-  success = false;
+  state = STATE_NORMAL;
+  restore_timer = NULL;
   redraw_menu();
 }
 
@@ -63,33 +77,61 @@ static void restore_menu(void *data) {
  * Set the menu item to a failed state
  */
 EXTFN void set_failed() {
-  sending = false;
-  failed = true;
-  success = false;
+  state = STATE_FAILED;
   redraw_menu();
-  app_timer_register(MENU_ACTION_MS, restore_menu, NULL);
+  if (restore_timer == NULL) {
+    restore_timer = app_timer_register(MENU_STATE_TIME_MS, restore_menu, NULL);
+  } else {
+    app_timer_reschedule(restore_timer, MENU_STATE_TIME_MS);
+  }
+  vibes_short_pulse();
 }
 
 /*
  * Set the menu item to a success state
  */
 EXTFN void set_success() {
-  sending = false;
-  failed = false;
-  success = true;
+  state = STATE_SUCCESS;
+  // Change the state of the item
+  if (get_config_data()->entry[selected_row].toggle) {
+    get_config_data()->entry[selected_row].on = !get_config_data()->entry[selected_row].on;
+  }
   redraw_menu();
-  app_timer_register(MENU_ACTION_MS, restore_menu, NULL);
+  if (restore_timer == NULL) {
+    restore_timer = app_timer_register(MENU_STATE_TIME_MS, restore_menu, NULL);
+  } else {
+    app_timer_reschedule(restore_timer, MENU_STATE_TIME_MS);
+  }
+  vibes_double_pulse();
+}
+
+/*
+ * Set the menu item to a sent state
+ */
+EXTFN void set_sent() {
+  if (state != STATE_SENDING) {
+    return;
+  }
+  state = STATE_SENT;
+  redraw_menu();
+  if (restore_timer == NULL) {
+    restore_timer = app_timer_register(MENU_STATE_TIME_MS, restore_menu, NULL);
+  } else {
+    app_timer_reschedule(restore_timer, MENU_STATE_TIME_MS);
+  }
 }
 
 /*
  * Set the menu item to a sending state
  */
-EXTFN void set_sending() {
-  sending = true;
-  failed = false;
-  success = false;
+static void set_sending() {
+  state = STATE_SENDING;
   redraw_menu();
-  app_timer_register(MENU_ACTION_MS, restore_menu, NULL);
+  if (restore_timer == NULL) {
+    restore_timer = app_timer_register(MENU_STATE_TIME_MS, restore_menu, NULL);
+  } else {
+    app_timer_reschedule(restore_timer, MENU_STATE_TIME_MS);
+  }
 }
 
 /*
@@ -125,9 +167,17 @@ static int16_t menu_get_header_height_callback(MenuLayer *menu_layer, uint16_t s
  * Here we draw what each header is
  */
 static void menu_draw_header_callback(GContext* ctx, const Layer *cell_layer, uint16_t section_index, void *data) {
-  graphics_context_set_text_color(ctx, MENU_HEAD_COLOR);
-  char *header = connected ? ALVIN : NO_BLUETOOTH;
-  graphics_draw_text(ctx, header, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD), GRect(0, -2, width, 32), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
+     
+  if (connected) {
+    #ifdef PBL_COLOR
+      graphics_context_set_compositing_mode(ctx, GCompOpSet);
+    #endif
+    graphics_draw_bitmap_in_rect(ctx, flourish, GRect(FLOURISH_LEFT, 0, 144, 16));
+  } else {
+    graphics_context_set_text_color(ctx, MENU_HEAD_COLOR);
+    graphics_draw_text(ctx, NO_BLUETOOTH, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD), GRect(0, -2, width, 32), GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
+  }
+  
 }
 
 /*
@@ -145,15 +195,23 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
 
   GColor menu_color = MENU_HEAD_COLOR;
   if (menu_layer_get_selected_index(menu_layer).row == cell_index->row) {
-    if (sending) {
-      menu_text = SENDING;
-      menu_color = MENU_SENDING_COLOR;
-    } else if (failed) {
-      menu_text = FAILED;
-      menu_color = MENU_FAILED_COLOR;
-    } else if (success) {
-      menu_text = SUCCESS;
-      menu_color = MENU_SUCCESS_COLOR;
+    switch (state) {
+      case STATE_SENDING:
+        menu_text = TEXT_SENDING;
+        menu_color = MENU_SENDING_COLOR;
+        break;
+      case STATE_SENT:
+        menu_text = TEXT_SENT;
+        menu_color = MENU_SENDING_COLOR;
+        break;
+      case STATE_FAILED:
+        menu_text = TEXT_FAILED;
+        menu_color = MENU_FAILED_COLOR;
+        break;
+      case STATE_SUCCESS:
+        menu_text = TEXT_SUCCESS;
+        menu_color = MENU_SUCCESS_COLOR;
+        break;
     }
   }
 
@@ -182,13 +240,6 @@ static void menu_draw_row_callback(GContext* ctx, const Layer *cell_layer, MenuI
 
 }
 
-/*
- * Do menu action after shutting the menu and allowing time for the animations to complete
- */
-static void do_menu_action(void *data) {
-  menu_item_fired(selected_row);
-  menu_act = false;
-}
 
 /*
  * Here we capture when a user selects a menu item
@@ -197,21 +248,15 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
   if (!get_config_data()->active || !connected) {
     return;
   }
-  if (menu_act) {
-    return;
-  }
-  menu_act = true;
+
   // Use the row to specify which item will receive the select action
   selected_row = cell_index->row;
-
-  // Change the state of the item
-  if (get_config_data()->entry[selected_row].toggle) {
-    get_config_data()->entry[selected_row].on = !get_config_data()->entry[selected_row].on;
-    redraw_menu();
-  }
+  
+  // Sending state
+  set_sending();
 
   // Always do the action
-  app_timer_register(MENU_ACTION_MS, do_menu_action, NULL);
+  menu_item_fired(selected_row);
 }
 
 static void bluetooth_handler(bool is_connected) {
@@ -219,7 +264,6 @@ static void bluetooth_handler(bool is_connected) {
     connected = is_connected;
     redraw_menu();
   }
-
 }
 
 /*
@@ -231,6 +275,8 @@ static void window_load(Window *window) {
 
   menu_icons[0] = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_NO);
   menu_icons[1] = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_YES);
+  
+  flourish = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_FLOURISH);
 
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_frame(window_layer);
@@ -274,7 +320,6 @@ static void window_unload(Window *window) {
  * Show the menu
  */
 EXTFN void show_menu() {
-  menu_act = false;
 
   window = window_create();
 #ifdef PBL_SDK_2

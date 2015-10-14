@@ -31,60 +31,63 @@
 function iftttMakerInterfaceFire(num, turnon) {
 
   try {
+    
+    console.log("num = " + num + ", turnon = " + turnon);
 
     // Find out config information
     var key = nvl(window.localStorage.getItem("key"), "");
 
-    // Escape if not configured
+    // Escape if not configured, caller returns fail
     if (key === "") {
-      callWatchApp(mConst().ctrlRequestFail);
-      return;
+      return false;
     }
 
     var eventName = "";
     var toggle = "N";
     switch (num) {
-      case 1:
+      case 0:
         eventName = nvl(window.localStorage.getItem("mn1"), "");
         toggle = nvl(window.localStorage.getItem("t1"), "N");
         break;
-      case 2:
+      case 1:
         eventName = nvl(window.localStorage.getItem("mn2"), "");
         toggle = nvl(window.localStorage.getItem("t2"), "N");
         break;
-      case 3:
+      case 2:
         eventName = nvl(window.localStorage.getItem("mn3"), "");
         toggle = nvl(window.localStorage.getItem("t3"), "N");
         break;
-      case 4:
+      case 3:
         eventName = nvl(window.localStorage.getItem("mn4"), "");
         toggle = nvl(window.localStorage.getItem("t4"), "N");
         break;
-      case 5:
+      case 4:
         eventName = nvl(window.localStorage.getItem("mn5"), "");
         toggle = nvl(window.localStorage.getItem("t5"), "N");
         break;
-      case 6:
+      case 5:
         eventName = nvl(window.localStorage.getItem("mn6"), "");
         toggle = nvl(window.localStorage.getItem("t6"), "N");
         break;
-      case 7:
+      case 6:
         eventName = nvl(window.localStorage.getItem("mn7"), "");
         toggle = nvl(window.localStorage.getItem("t7"), "N");
         break;
-      case 8:
+      case 7:
         eventName = nvl(window.localStorage.getItem("mn8"), "");
         toggle = nvl(window.localStorage.getItem("t8"), "N");
         break;
-      case 9:
+      case 8:
         eventName = nvl(window.localStorage.getItem("mn9"), "");
         toggle = nvl(window.localStorage.getItem("t9"), "N");
         break;
-      case 10:
+      case 9:
         eventName = nvl(window.localStorage.getItem("mn10"), "");
         toggle = nvl(window.localStorage.getItem("t10"), "N");
         break;
     }
+    
+    console.log("eventname = " + eventName);
 
     // menu name becomes event name, by lowercasing and replacing space with _
     // This saves the user having to put in and see two very similar strings
@@ -99,6 +102,8 @@ function iftttMakerInterfaceFire(num, turnon) {
         eventName += "_off";
       }
     }
+    
+    console.log("doctored eventname = " + eventName);
 
     // Can't see a use for a payload
     var payload = {
@@ -123,6 +128,7 @@ function iftttMakerInterfaceFire(num, turnon) {
   } catch (err) {
     callWatchApp(mConst().ctrlRequestFail);
   }
+  return true;
 }
 
 /*
