@@ -27,8 +27,8 @@
 
 #include "pebble.h"
 
-#define VERSION 10
-#define VERSION_TXT "1.0"
+#define VERSION 11
+#define VERSION_TXT "1.1"
 
 // Comment out for production build - leaves errors on BASALT/CHALK and nothing on APLITE as this is much tighter for memory
 #define TESTING_BUILD
@@ -151,6 +151,12 @@ void save_config_data(void *data);
 void set_failed();
 void set_success();
 void set_sent();
+
+#ifdef PBL_SDK_3
+void voice_control();
+void callback_from_voice(int32_t menu_item);
+void tidy_voice();
+#endif
 
 #endif /* ALVIN_H_ */
 

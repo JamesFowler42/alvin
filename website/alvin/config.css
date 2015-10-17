@@ -122,6 +122,10 @@ p.buttons {
     color: white;
 }
 
+.hightlight {
+    color: #FF4700;
+}
+
 .menuitems {
     width:100%;
     border-collapse: separate;

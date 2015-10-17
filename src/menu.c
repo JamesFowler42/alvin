@@ -45,8 +45,6 @@ static int16_t selected_row;
 static int16_t centre;
 static int16_t width;
 static uint8_t state = STATE_NORMAL;
-static bool failed = false;
-static bool success = false;
 static GBitmap *flourish;
 static AppTimer *restore_timer = NULL;
 
@@ -259,6 +257,50 @@ static void menu_select_callback(MenuLayer *menu_layer, MenuIndex *cell_index, v
   menu_item_fired(selected_row);
 }
 
+#ifdef PBL_SDK_3
+
+/*
+ * Menu callback from void
+ */
+EXTFN void callback_from_voice(int32_t menu_item) {
+
+  // Move to the row in the menu
+  MenuIndex index;
+  index.section = 0;
+  index.row = menu_item;
+  
+  menu_layer_set_selected_index(menu_layer, index, MenuRowAlignCenter, true);
+  
+  // Fire as if this were a menu click
+  selected_row = menu_item;
+  
+  // Sending state
+  set_sending();
+
+  // Always do the action
+  menu_item_fired(selected_row);
+  
+}
+
+#endif
+
+/*
+ * Long click on select
+ */
+static void menu_select_long_click(MenuLayer *menu_layer, MenuIndex *cell_index, void *data) {
+  
+  #ifdef PBL_SDK_3
+  
+  if (!get_config_data()->active || !connected) {
+    return;
+  }
+  
+  voice_control();
+  
+  #endif
+  
+}
+
 static void bluetooth_handler(bool is_connected) {
   if (connected != is_connected) {
     connected = is_connected;
@@ -289,7 +331,15 @@ static void window_load(Window *window) {
   menu_layer_set_center_focused(menu_layer, true);
 #endif
 
-  menu_layer_set_callbacks(menu_layer, NULL, (MenuLayerCallbacks ) { .get_num_sections = menu_get_num_sections_callback, .get_num_rows = menu_get_num_rows_callback, .get_header_height = menu_get_header_height_callback, .draw_header = menu_draw_header_callback, .draw_row = menu_draw_row_callback, .select_click = menu_select_callback, });
+  menu_layer_set_callbacks(menu_layer, NULL, (MenuLayerCallbacks ) 
+  { .get_num_sections = menu_get_num_sections_callback, 
+   .get_num_rows = menu_get_num_rows_callback, 
+   .get_header_height = menu_get_header_height_callback, 
+   .draw_header = menu_draw_header_callback, 
+   .draw_row = menu_draw_row_callback, 
+   .select_click = menu_select_callback, 
+   .select_long_click = menu_select_long_click,
+  });
 
   menu_layer_set_click_config_onto_window(menu_layer, window);
 
@@ -307,6 +357,10 @@ static void window_load(Window *window) {
  * Unload the menu window
  */
 static void window_unload(Window *window) {
+  #ifdef PBL_SDK_3
+    tidy_voice();
+  #endif
+  
   MenuLayer *temp_menu_layer = menu_layer;
   menu_layer = NULL;
   menu_layer_destroy(temp_menu_layer);
