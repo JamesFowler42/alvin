@@ -116,6 +116,7 @@ Pebble.addEventListener("webviewclosed", function(e) {
     window.localStorage.setItem("t8", configData.t8);
     window.localStorage.setItem("t9", configData.t9);
     window.localStorage.setItem("t10", configData.t10);
+    window.localStorage.setItem("kvalid", configData.keyValid);
 
     console.log("Test settings requested");
     iftttMakerInterfaceTest();
@@ -172,8 +173,9 @@ function buildUrl() {
   var t8 = nvl(window.localStorage.getItem("t8"), "N");
   var t9 = nvl(window.localStorage.getItem("t9"), "N");
   var t10 = nvl(window.localStorage.getItem("t10"), "N");
+  var kvalid = nvl(window.localStorage.getItem("kvalid"), "X");
 
-  var url = mConst().url + version + ".html?" + "vers=" + version + "&" + "key=" + key + "&" + "mn1=" + mn1 + "&" + "mn2=" + mn2 + "&" + "mn3=" + mn3 + "&" + "mn4=" + mn4 + "&" + "mn5=" + mn5 + "&" + "mn6=" + mn6 + "&" + "mn7=" + mn7 + "&" + "mn8=" + mn8 + "&" + "mn9=" + mn9 + "&" + "mn10=" + mn10 + "&" + "t1=" + t1 + "&" + "t2=" + t2 + "&" + "t3=" + t3 + "&" + "t4=" + t4 + "&" + "t5=" + t5 + "&" + "t6=" + t6 + "&" + "t7=" + t7 + "&" + "t8=" + t8 + "&" + "t9=" + t9 + "&" + "t10=" + t10;
+  var url = mConst().url + version + ".html?" + "vers=" + version + "&" + "key=" + key + "&" + "mn1=" + mn1 + "&" + "mn2=" + mn2 + "&" + "mn3=" + mn3 + "&" + "mn4=" + mn4 + "&" + "mn5=" + mn5 + "&" + "mn6=" + mn6 + "&" + "mn7=" + mn7 + "&" + "mn8=" + mn8 + "&" + "mn9=" + mn9 + "&" + "mn10=" + mn10 + "&" + "t1=" + t1 + "&" + "t2=" + t2 + "&" + "t3=" + t3 + "&" + "t4=" + t4 + "&" + "t5=" + t5 + "&" + "t6=" + t6 + "&" + "t7=" + t7 + "&" + "t8=" + t8 + "&" + "t9=" + t9 + "&" + "t10=" + t10 + "&kvalid=" + kvalid;
 
   console.log("url=" + url + " (len=" + url.length + ")");
   return url;

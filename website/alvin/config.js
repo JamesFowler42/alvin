@@ -22,6 +22,19 @@
  * THE SOFTWARE.
  */
 
+/*
+ * Set the key field border depending on validation nature
+ */
+function setKeyBorder(validFlag) {
+  if (validFlag === "Y") {
+    $("#key").removeClass("greyborder").removeClass("redborder").addClass("greenborder");
+  } else if (validFlag === "N") {
+    $("#key").removeClass("greyborder").removeClass("greenborder").addClass("redborder");
+  } else {
+    $("#key").removeClass("redborder").removeClass("greenborder").addClass("greyborder");
+  }
+}
+
 /*******************************************************************************
  * 
  * Main process
@@ -65,6 +78,7 @@ $("document").ready(function() {
   var toggle8 = getParameterByName("t8");
   var toggle9 = getParameterByName("t9");
   var toggle10 = getParameterByName("t10");
+  var kvalid = getParameterByName("kvalid");
   var returnTo = getParameterByName("return_to");
   if (returnTo === "") {
     returnTo = "pebblejs://close#";
@@ -92,6 +106,10 @@ $("document").ready(function() {
   $("#toggle8").prop("checked", toggle8 === "Y");
   $("#toggle9").prop("checked", toggle9 === "Y");
   $("#toggle10").prop("checked", toggle10 === "Y");
+  
+  // Set whether the key is considered valid or not
+  setKeyBorder(kvalid);
+  var originalKValid = kvalid;
   
   // Set version
   $("#version").text(parseInt(vers, 10) / 10);
@@ -139,7 +157,17 @@ $("document").ready(function() {
     $(".togglechk", tr).prop("checked", prevToggle);
     $(".togglechk", prevtr).prop("checked", currentToggle);
   });
-
+  
+  // We've changed the key
+  $("#key").change(function() {
+    if ($(this).val() === key) {
+      kvalid = originalKValid;
+    } else {
+      kvalid = "X";
+    }
+    setKeyBorder(kvalid);
+  });
+  
   // Handle the Save and reset option
   $(".save").click(function() {
     var configData = {
@@ -164,7 +192,8 @@ $("document").ready(function() {
       t7 : $("#toggle7").is(':checked') ? "Y" : "N",
       t8 : $("#toggle8").is(':checked') ? "Y" : "N",
       t9 : $("#toggle9").is(':checked') ? "Y" : "N",
-      t10 : $("#toggle10").is(':checked') ? "Y" : "N"
+      t10 : $("#toggle10").is(':checked') ? "Y" : "N",
+      keyvalid : kvalid
     };
     var move = true;
     while (move) {

@@ -39,6 +39,7 @@ function iftttMakerInterfaceFire(num, turnon) {
 
     // Escape if not configured, caller returns fail
     if (key === "") {
+      window.localStorage.setItem("kvalid", "N");
       return false;
     }
 
@@ -120,13 +121,16 @@ function iftttMakerInterfaceFire(num, turnon) {
       console.log("iftttMakerInterfaceFire: " + JSON.stringify(resp));
       if (resp.status !== 1) {
         callWatchApp(mConst().ctrlRequestFail);
+        window.localStorage.setItem("kvalid", "N");
       } else {
         callWatchApp(mConst().ctrlRequestOK);
+        window.localStorage.setItem("kvalid", "Y");
       }
     });
 
   } catch (err) {
     callWatchApp(mConst().ctrlRequestFail);
+    window.localStorage.setItem("kvalid", "N");
   }
   return true;
 }
@@ -144,6 +148,7 @@ function iftttMakerInterfaceTest() {
     // Escape if not configured
     if (key === "") {
       console.log("ifttt maker deactivated");
+      window.localStorage.setItem("kvalid", "N");
       return;
     }
 
@@ -160,13 +165,16 @@ function iftttMakerInterfaceTest() {
       console.log("iftttMakerInterfaceTest: " + JSON.stringify(resp));
       if (resp.status !== 1) {
         console.log("iftttMakerInterfaceTest: " + JSON.stringify(resp.errors));
+        window.localStorage.setItem("kvalid", "N");
       } else {
         console.log("iftttMakerInterfaceTest:  OK");
+        window.localStorage.setItem("kvalid", "Y");
       }
     });
 
   } catch (err) {
     console.log("iftttMakerInterfaceTest: " + err.message);
+    window.localStorage.setItem("kvalid", "N");
   }
 }
 

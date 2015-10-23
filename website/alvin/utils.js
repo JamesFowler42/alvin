@@ -92,3 +92,10 @@ function safeTrim(strval) {
   }
 }
 
+/*
+ * Protection against nulls
+ */
+function nvl(field, defval) {
+  return field === null || field === "null" || typeof field === "undefined" ? defval : field;
+}
+
